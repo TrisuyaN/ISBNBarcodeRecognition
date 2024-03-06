@@ -134,6 +134,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\ISBNBarcodeRecognition.cpp" />
+    <ClCompile Include="src\opencv_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\opencv_test.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="img\test.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,10 @@
 ﻿#include <iostream>
+#include "opencv_test.h"
 
-int main()
-{
-    std::cout << "Hello World!\n";
+
+int main() {
+
+    //opencv_camera_test();
+    opencv_img_test();
+
 }
