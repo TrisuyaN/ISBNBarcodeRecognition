@@ -4,7 +4,8 @@
 
 int main() {
 
-    //opencv_camera_test();
-    opencv_img_test();
+#ifdef OPENCVTEST
+	opencv_test();
+#endif
 
 }

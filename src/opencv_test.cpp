@@ -1,11 +1,13 @@
 #include "opencv_test.h"
 
+#ifdef OPENCVTEST
 
 using namespace std;
 using namespace cv;
 
 void opencv_test() {
-
+	opencv_camera_test();
+	opencv_img_test();
 }
 
 int opencv_camera_test() {
@@ -47,3 +49,6 @@ int opencv_img_test() {
 	remove("img\\test.bmp");
 	return 0;
 }
+
+
+#endif
