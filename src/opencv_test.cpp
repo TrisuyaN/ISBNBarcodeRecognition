@@ -1,12 +1,16 @@
+/*
+	Test if OpenCV environment can work
+*/
+
+
 #include "opencv_test.h"
 
 
-// change opencv test items here
-#ifdef OPENCVTEST
+#ifdef OPENCVTEST				// change test items here
 
-//#define OPENCV_CAMERA_TEST
-//#define OPENCV_IMAGE_TEST
-#define OPENCV_GLOB_TEST
+//#define OPENCV_CAMERA_TEST	// test1: Open the camera
+//#define OPENCV_IMAGE_TEST		// test2: Open .\img\test.jpg and save it as test.bmp. Then delete it when exiting.
+#define OPENCV_GLOB_TEST		// test3: Read .\img\glod\*.jpg and convert into cv::Mat, then open them one by one.
 
 #endif
 
@@ -67,7 +71,7 @@ int opencv_img_test() {
 	// show test.jpg
 	imshow("ÄãºÃ", image);
 
-	// save test.jpg as test.tmp
+	// save test.jpg as test.bmp
 	imwrite("img\\test.bmp", image);
 
 	// wait for input and then delete test.bmp
