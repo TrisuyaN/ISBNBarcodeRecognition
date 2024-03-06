@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34622.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ISBNBarcodeRecognition", "ISBNBarcodeRecognition.vcxproj", "{F4EB3281-AB1C-4686-AD99-914A24D49A7D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F4EB3281-AB1C-4686-AD99-914A24D49A7D}.Debug|x64.ActiveCfg = Debug|x64
+		{F4EB3281-AB1C-4686-AD99-914A24D49A7D}.Debug|x64.Build.0 = Debug|x64
+		{F4EB3281-AB1C-4686-AD99-914A24D49A7D}.Debug|x86.ActiveCfg = Debug|Win32
+		{F4EB3281-AB1C-4686-AD99-914A24D49A7D}.Debug|x86.Build.0 = Debug|Win32
+		{F4EB3281-AB1C-4686-AD99-914A24D49A7D}.Release|x64.ActiveCfg = Release|x64
+		{F4EB3281-AB1C-4686-AD99-914A24D49A7D}.Release|x64.Build.0 = Release|x64
+		{F4EB3281-AB1C-4686-AD99-914A24D49A7D}.Release|x86.ActiveCfg = Release|Win32
+		{F4EB3281-AB1C-4686-AD99-914A24D49A7D}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D8EA3470-104E-44FE-818A-9E893E07AAF5}
+	EndGlobalSection
+EndGlobal
