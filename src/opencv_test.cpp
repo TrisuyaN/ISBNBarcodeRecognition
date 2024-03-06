@@ -2,17 +2,16 @@
 	Test if OpenCV environment can work
 */
 
-
 #include "opencv_test.h"
+#ifdef OPENCVTEST
 
 
-#ifdef OPENCVTEST				// change test items here
+// change test items here
 
 //#define OPENCV_CAMERA_TEST	// test1: Open the camera
 //#define OPENCV_IMAGE_TEST		// test2: Open .\img\test.jpg and save it as test.bmp. Then delete it when exiting.
 #define OPENCV_GLOB_TEST		// test3: Read .\img\glod\*.jpg and convert into cv::Mat, then open them one by one.
 
-#endif
 
 const std::string GLOW_TEST_PATH = ".\\img\\glow_test\\";
 
@@ -117,4 +116,7 @@ int opencv_glob_show_test(vector<Mat>&& images) {
 	}
 	return 0;
 }
+#endif
+
+
 #endif
