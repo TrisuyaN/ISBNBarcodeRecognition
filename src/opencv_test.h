@@ -1,7 +1,7 @@
 #pragma once
 
 // comment the line below to disable OpenCV tests
-#define OPENCVTEST
+//#define OPENCVTEST
 
 #ifdef OPENCVTEST
 #include <opencv2\opencv.hpp>
