@@ -24,12 +24,18 @@
     <ClCompile Include="src\preprocessor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\recognizer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\opencv_test.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\preprocessor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\recognizer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

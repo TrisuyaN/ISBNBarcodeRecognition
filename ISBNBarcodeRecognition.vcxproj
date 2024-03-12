@@ -133,11 +133,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\recognizer.cpp" />
     <ClCompile Include="src\preprocessor.cpp" />
     <ClCompile Include="src\ISBNBarcodeRecognition.cpp" />
     <ClCompile Include="src\opencv_test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\recognizer.h" />
     <ClInclude Include="src\preprocessor.h" />
     <ClInclude Include="src\opencv_test.h" />
   </ItemGroup>
