@@ -1,8 +1,21 @@
+/**@file		preprocessor.cpp
+* @brief		图片预处理器类源文件
+* @details		图片预处理器类，处理单个ISBN标签图片并分割为一组字符图像供Recognizer类识别处理，同时提供了许多可复用的实用函数，并支持保存每一步处理结果图像
+* @author		al_1suyan
+* @date			2024-3-12
+* @version		V0.1.0
+*
+**********************************************************************************
+*/
+
 #include "preprocessor.h"
 
 using namespace std;
 
-// 得到等比例转换为指定宽度的图像
+/**@brief 得到等比例转换为指定宽度的图像
+* @param[in] input_image 源图片引用
+* @return 处理后的图像
+*/
 cv::Mat Preprocessor::resize(cv::Mat& input_image) {
 	cv::Mat res_image;
 	double width = 1200;
@@ -11,14 +24,20 @@ cv::Mat Preprocessor::resize(cv::Mat& input_image) {
 	return res_image;
 }
 
-// 获得灰度化图像
+/**@brief 获得灰度化图像
+* @param[in] input_image 源图片引用
+* @return 处理后的图像
+*/
 cv::Mat Preprocessor::gray(cv::Mat& input_image) {
 	cv::Mat res_image;
 	cvtColor(input_image, res_image, cv::COLOR_RGB2GRAY);
 	return res_image;
 }
 
-// 获得调整角度后的竖直图像
+/**@brief 获得调整角度后的竖直图像
+* @param[in] input_image 源图片引用
+* @return 处理后的图像
+*/
 cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
 	cv::Mat res_image;
 	cv::Mat pic_edge;
@@ -47,13 +66,20 @@ cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
 	return res_image;
 }
 
-// 获取数组的中值
+
+/**@brief 获取数组的中值
+* @param[in] val int类型数组
+* @return 数组中值
+*/
 int Preprocessor::sort_mid(int val[]){
 	sort(val, val+8);
 	return val[4];
 }
 
-// 获得滤波降噪的图像
+/**@brief 获得滤波降噪的图像
+* @param[in] input_image 源图片引用
+* @return 处理后的图像
+*/
 cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
 	cv::Mat res_image = cv::Mat(input_image.rows, input_image.cols, CV_8UC1);
     int dx[] = { 0,-1,0,1,-1,1,-1,0,1 };
@@ -77,7 +103,10 @@ cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
 	return res_image;
 }
 
-// 获得二值化图像
+/**@brief 获得二值化图像
+* @param[in] input_image 源图片引用
+* @return 处理后的图像
+*/
 cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
 	cv::Mat res_image;
 	cv::threshold(input_image, res_image, 0, 255, 1 | cv::THRESH_OTSU);
@@ -85,7 +114,10 @@ cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
 	return res_image;
 }
 
-// 获得水漫法去除白边的图像
+/**@brief 获得水漫法去除白边的图像
+* @param[in] input_image 源图片引用
+* @return 处理后的图像
+*/
 cv::Mat Preprocessor::flood_fill(cv::Mat& input_image) {
 	cv::Mat res_image = input_image;
 	int dx[] = { -1,0,1,-1,1,-1,0,1 };
@@ -121,7 +153,10 @@ cv::Mat Preprocessor::flood_fill(cv::Mat& input_image) {
 	return res_image;
 }
 
-// 得到竖直方向的ROI区域图像
+/**@brief 得到竖直方向的ROI区域图像
+* @param[in] input_image 源图片引用
+* @return 处理后的图像
+*/
 cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 
 	std::vector<int> rows_white_pixels;				// 存储行白色像素数
@@ -204,7 +239,10 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 	return ROI_image_y;
 }
 
-// 对竖直方向ROI切割处理得到ISBN的字符图像集
+/**@brief 对竖直方向ROI切割处理得到ISBN的字符图像集
+* @param[in] input_image 源图片引用
+* @return 切割处理得到的字符图像集
+*/
 std::vector<cv::Mat> Preprocessor::get_ROI_x(cv::Mat& input_image) {
 	// 类似get_ROI_y的方法继续对（输入的）结果区域逐列处理，获得ROI_range_x
 	std::vector<int> num_area;
@@ -273,11 +311,15 @@ std::vector<cv::Mat> Preprocessor::get_ROI_x(cv::Mat& input_image) {
 
 
 
-
+/**@brief Preprocessor类构造函数
+* @param[in] input_image 待处理的图片引用
+*/
 Preprocessor::Preprocessor(cv::Mat input_image) {
 	raw_image = input_image;
 }
 
+/**@brief 执行处理流程的函数
+*/
 void Preprocessor::preprocess() {
 	resized_image = resize(raw_image);
 	gray_image = gray(resized_image);
@@ -289,10 +331,16 @@ void Preprocessor::preprocess() {
 	processed_image_set = get_ROI_x(ROI_image_y);
 }
 
+/**@brief 得到最终字符图像集
+* @return Preprocessor类处理得到的最终字符图像集
+*/
 std::vector<cv::Mat> Preprocessor::get_preprocess_result() {
 	return processed_image_set;
 }
 
+/**@brief 保存每一步处理的结果图像，用于Debug阶段检查图像处理
+* @param[in] save_path 保存路径
+*/
 void Preprocessor::dbg_save(string save_path) {
 	imwrite(save_path + "resized.jpg", resized_image);
 	imwrite(save_path + "gray.jpg", gray_image);

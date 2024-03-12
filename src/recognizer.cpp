@@ -1,8 +1,22 @@
+/**@file		recognizer.cpp
+* @brief		图片识别器类源文件
+* @details		图片识别器类源文件
+* @author		al_1suyan
+* @date			2024-3-12
+* @version		V0.1.0
+*
+**********************************************************************************
+*/
+
 #include "recognizer.h"
 
 using namespace std;
 
-// 单次尝试匹配模板和输入图片，返回两者的absdiff总差值
+/**@brief 单次尝试匹配模板和输入图片，返回两者的absdiff图像的像素值总和，即为两者的总差值
+* @param[in] input_image    源图片
+* @param[in] template_image 模板图片
+* @return 图片和模板的absdiff像素总差值
+*/
 double Recognizer::charMatch(cv::Mat input_image, cv::Mat template_image) {
     cv::Mat diff_image/*, demo_diff_image*/;
     cv::resize(input_image, input_image, cv::Size(template_image.cols, template_image.rows));
@@ -22,12 +36,20 @@ double Recognizer::charMatch(cv::Mat input_image, cv::Mat template_image) {
     return nums / (diff_image.rows * diff_image.cols);
 }
 
-// 自定义匹配结果的比较
+/**@brief 自定义匹配结果CharMatchResult类的比较规则，实现STL算法或容器按diff值从小到大排序
+* @param[in] a CharMatchResult对象
+* @param[in] b CharMatchResult对象
+* @return 比较值
+*/
 bool cmpCharMatchResult(CharMatchResult a, CharMatchResult b){
     return a.diff < b.diff;
 }
 
-// 匹配单个字符图片并返回识别出的字符
+/**@brief 根据模板和输入图片的差值大小，匹配单个字符图片并返回识别出的字符
+* @param[in] input_image    源字符图片
+* @param[in] index_in_set   源字符图片在字符图片集中的索引
+* @return 识别出的字符
+*/
 char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 
     // 检查将匹配的图片大小是否大于阈值
@@ -104,12 +126,18 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 
 
 
-
+/**@brief Recognizer类构造函数
+* @param[in] input_image_set        源字符图片集引用
+* @param[in] input_template_path    模板图片路径
+*/
 Recognizer::Recognizer(std::vector<cv::Mat>& input_image_set, string input_template_path) {
     image_set = input_image_set;
     template_path = input_template_path;
 }
 
+/**@brief 字符图像集识别函数
+* @return 识别结果RecognizeResult对象
+*/
 RecognizeResult Recognizer::recognize() {
 
     string res = "";
