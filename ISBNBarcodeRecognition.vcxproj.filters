@@ -44,6 +44,9 @@
     <ClInclude Include="src\tester.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\myutility.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="img\test.jpg">

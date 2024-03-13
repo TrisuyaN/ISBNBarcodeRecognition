@@ -19,7 +19,7 @@
  * @brief		项目主函数文件
  * @details		main函数入口
  * @author		al_1suyan
- * @date			2024-3-13
+ * @date		2024-3-13
  * @version		V0.1.0
  *
  **********************************************************************************
@@ -44,4 +44,5 @@ int main() {
 #endif
 	Tester tester(test_images_path, template_images_path);
 	tester.test(SAVE_PREPROCESSED_IMAGES, preprocessed_images_save_path);
+	tester.calc_accuracy();
 }

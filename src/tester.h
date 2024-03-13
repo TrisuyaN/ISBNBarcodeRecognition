@@ -1,6 +1,6 @@
 /**@file		tester.h
-* @brief		鎵归噺娴嬭瘯绫诲ご鏂囦欢
-* @details		鎵归噺娴嬭瘯绫诲ご鏂囦欢
+* @brief		批量测试类头文件
+* @details		批量测试类头文件
 * @author		al_1suyan
 * @date			2024-3-13
 * @version		V0.1.0
@@ -25,11 +25,24 @@ private:
 	std::string template_images_path;
 	std::vector<cv::String> image_files;
 	std::vector<cv::Mat> images;
+
+	std::vector<std::string> isbn_answers;
+	std::vector<std::string> isbn_recognize_results;
+
+
 	int	ISBN_test_total;
+	int	ISBN_test_accurate;
 	double ISBN_accuracy;
+	int char_total;
+	int char_accurate;
 	double char_accuracy;
+
+	std::string digit_filter(std::string);
+	void read_images();
+	void get_isbn_answers();
 
 public:
 	Tester(std::string, std::string);
 	void test(bool, std::string preprocessed_images_savepath);
+	void calc_accuracy();
 };
