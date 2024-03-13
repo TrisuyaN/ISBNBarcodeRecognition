@@ -241,6 +241,19 @@ cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
 	return ROI_image_y;
 }
 
+
+// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
+bool Preprocessor::charImgCheck(cv::Mat input_image) {
+	if (input_image.rows * input_image.cols < S_INPUT_CHAR_IMAGE_THRESHOLD) {
+		return false;
+	}
+	else if ((double)input_image.rows / input_image.cols < RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD) {
+		return false;
+	}
+
+	return true;
+}
+
 /**@brief 对竖直方向ROI切割处理得到ISBN的字符图像集
  * @param[in] input_image 源图片引用
  * @return 切割处理得到的字符图像集
@@ -306,7 +319,11 @@ std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
 			}
 		}
 		item_image = item_image(cv::Range(head, end), cv::Range::all());
-		result_image_set.push_back(item_image);
+
+		if (charImgCheck(item_image)) {
+			result_image_set.push_back(item_image);
+		}
+		
 	}
 	return result_image_set;
 }

@@ -22,9 +22,14 @@
 
 /// 字符模板参数
 #define N_TEMPLATE						4			///< 模板图片套数，依此参数和模板图片索引计算得到对应字符
-#define N_TEMPLATE_IMAGES				14			///< 每套模板字符图片数量，依此参数和模板图片索引计算得到对应字符
+#define N_TEMPLATE_IMAGES				15			///< 每套模板字符图片数量，依此参数和模板图片索引计算得到对应字符
 
 
-/// 字符图片阈值参数
+/// 字符图片筛选阈值参数
 #define S_INPUT_CHAR_IMAGE_THRESHOLD	900			///< 字符图片大小阈值，小于此阈值则拒绝识别返回空格字符
 #define RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD 1.2		///< 字符图片行列比值的阈值，小于此阈值则拒绝识别返回空格字符
+
+
+/// 区域特判字符加权
+#define BUFF		1.1
+#define DEBUFF		1.1

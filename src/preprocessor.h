@@ -66,6 +66,8 @@ private:
 	cv::Mat ROI_image_y;
 	std::vector<cv::Mat> processed_image_set;
 
+	bool charImgCheck(cv::Mat);
+
 	// 分步的图像处理函数
 	int sortMid(int val[], int);					///< 获取数组的中值 
 	cv::Mat resize(cv::Mat&, double);				///< 得到等比例转换为指定宽度的图像

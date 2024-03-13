@@ -45,17 +45,17 @@ bool cmpCharMatchResult(CharMatchResult a, CharMatchResult b){
 	return a.diff < b.diff;
 }
 
-// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
-bool Recognizer::charImgCheck(cv::Mat input_image) {
-	if (input_image.rows * input_image.cols < S_INPUT_CHAR_IMAGE_THRESHOLD) {
-		return false;
-	}
-	else if ((double)input_image.rows / input_image.cols < RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD) {
-		return false;
-	}
-
-	return true;
-}
+//// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
+//bool Recognizer::charImgCheck(cv::Mat input_image) {
+//	if (input_image.rows * input_image.cols < S_INPUT_CHAR_IMAGE_THRESHOLD) {
+//		return false;
+//	}
+//	else if ((double)input_image.rows / input_image.cols < RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD) {
+//		return false;
+//	}
+//
+//	return true;
+//}
 
 /**@brief 根据模板和输入图片的差值大小，匹配单个字符图片并返回识别出的字符
  * @param[in] input_image    源字符图片
@@ -64,10 +64,10 @@ bool Recognizer::charImgCheck(cv::Mat input_image) {
  */
 char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	
-	// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
-	if (!charImgCheck(input_image)) {
-		return ' ';
-	}
+	//// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
+	//if (!charImgCheck(input_image)) {
+	//	return ' ';
+	//}
 	
 	// 读取模板
 	string pattern = template_path + "*";
@@ -91,37 +91,62 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	// 逐个模板尝试匹配
 	vector<CharMatchResult> match_results;
 	match_results.resize(template_image_total);
+
+	int index = 0;
+
 	for (int template_index = 0; template_index < template_image_total; template_index++) {
 		cv::Mat cur_template_image = cv::imread(templates_file_name[template_index], 0);
-		//cv::imshow("template_index", cur_template_image);
-		//cv::waitKey(0);
 		match_results[template_index].template_index = template_index;
 		match_results[template_index].diff = charMatch(input_image, cur_template_image);
+
+		// 末位数字特判，为X模板匹配增加权重，为8和7减小权重
+		if (index_in_set == image_set.size() - 1) {
+			if (template_index % N_TEMPLATE_IMAGES == 14) {
+				match_results[template_index].diff /= (double)BUFF;
+			}
+			else if (template_index % N_TEMPLATE_IMAGES == 8) {
+				match_results[template_index].diff *= (double)DEBUFF;
+			}
+			else if (template_index % N_TEMPLATE_IMAGES == 7) {
+				match_results[template_index].diff *= (double)DEBUFF;
+			}
+		}
+		// 开始区域数字特判，为B模板匹配增加权重，为8减小权重
+		else if (index_in_set <= 3) {
+			if (template_index % N_TEMPLATE_IMAGES == 12) {
+				match_results[template_index].diff /= (double)BUFF;
+			}
+			else if (template_index % N_TEMPLATE_IMAGES == 8) {
+				match_results[template_index].diff *= (double)DEBUFF;
+			}
+		}
 	}
-	
+
 	// 选择差值最小的模板
 	sort(match_results.begin(), match_results.end(), cmpCharMatchResult);
 	int min_diff_template_index = 0;
-	
+
 	// 根据字符图片在集合中的索引分成数字和字母，从而淘汰匹配率高但类型不符的模板，**但很大程度上依赖字符集切割是否标准，是否有多余**
 	for (int i = 0; i < template_image_total; ++i) {
-		// 字符图片索引小于4，说明是字母，那么当对应模板是数字的时候应该放弃这个匹配（即使更符合），继续寻找，直到其符合对应模板为字母（ISBN四个字母之一）
+		// 字符图片索引小于4，说明是ISBN字母，那么当对应模板是数字的时候应该放弃这个匹配（即使更符合），继续寻找，直到其符合对应模板为字母（ISBN四个字母之一）
 		if (index_in_set < 4) {
 			while (min_diff_template_index < match_results.size() &&
-				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES < 10) {
+				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES < 10 || 
+				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES == 14 ) {
 				min_diff_template_index++;
 			}
 		}
-		// 同理 字符图片索引大于等于4，说明是数字，那么当对应模板是字母的时候应该放弃这个匹配（即使更符合），继续寻找，直到其符合对应模板为数字
+		// 同理 字符图片索引大于等于4，说明是数字或X，那么当对应模板是字母的时候应该放弃这个匹配（即使更符合），继续寻找，直到其符合对应模板为数字或X
 		else if (index_in_set >= 4) {
 			while (min_diff_template_index < match_results.size() &&
-				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES >= 10) {
+				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES >= 10 &&
+				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES != 14) {
 				min_diff_template_index++;
 			}
 		}
 	}
+	index = match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES;
 	
-	int index = match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES;
 	switch (index) {
 	case 0:
 	case 1:
@@ -142,6 +167,8 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 		return 'B';
 	case 13:
 		return 'N';
+	case 14:
+		return 'X';
 	default:
 		return ' ';
 	}

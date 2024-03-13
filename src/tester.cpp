@@ -13,7 +13,7 @@
 std::string Tester::digitFilter(std::string string_input) {
 	std::string res = "";
 	for (auto c : string_input) {
-		if (isdigit(c)) {
+		if (isdigit(c) || c == 'X') {
 			res.append(1, c);
 		}
 	}
