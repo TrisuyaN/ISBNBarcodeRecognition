@@ -2,7 +2,7 @@
  * @brief		图片识别器类源文件
  * @details		图片识别器类源文件
  * @author		al_1suyan
- * @date			2024-3-12
+ * @date		2024-3-12
  * @version		V0.1.0
  *
  **********************************************************************************
@@ -64,39 +64,53 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	vector<cv::Mat> template_images;
 	cv::glob(pattern, templates_file_name);
 	int template_image_total = templates_file_name.size();
+
+	// 检查模板套数与宏参数N_TEMPLATE是否匹配，若不匹配会导致模板文件索引和字符无法对应
+	if (template_image_total / 14 != N_TEMPLATE) {
+		cerr << "模板文件数量与宏参数不匹配" << endl;
+		exit(-1);
+	}
 	
 	// 检查读取模板文件是否成功
 	if (templates_file_name.size() == 0) {
-		cout << "No image in " + template_path << endl;
-		exit(1);
+		cout << "找不到文件，在" + template_path << endl;
+		exit(-1);
 	}
 	
 	// 逐个模板尝试匹配
-	CharMatchResult* match_results = new CharMatchResult[template_image_total];
+	vector<CharMatchResult> match_results;
+	match_results.resize(template_image_total);
 	for (int template_index = 0; template_index < template_image_total; template_index++) {
 		cv::Mat cur_template_image = cv::imread(templates_file_name[template_index], 0);
+		//cv::imshow("template_index", cur_template_image);
+		//cv::waitKey(0);
 		match_results[template_index].template_index = template_index;
 		match_results[template_index].diff = charMatch(input_image, cur_template_image);
 	}
 	
 	// 选择差值最小的模板
-	sort(match_results, match_results + template_image_total, cmpCharMatchResult);
+	sort(match_results.begin(), match_results.end(), cmpCharMatchResult);
 	int min_diff_template_index = 0;
 	
+	// 根据字符图片在集合中的索引分成数字和字母，从而淘汰匹配率高但类型不符的模板，**但很大程度上依赖字符集切割是否标准，是否有多余**
 	for (int i = 0; i < template_image_total; ++i) {
-		if (index_in_set > 5) {
-			while (match_results[min_diff_template_index].template_index / 3 >= 10 || match_results[min_diff_template_index].template_index == 14) {
+		// 字符图片索引小于4，说明是字母，那么当对应模板是数字的时候应该放弃这个匹配（即使更符合），继续寻找，直到其符合对应模板为字母（ISBN四个字母之一）
+		if (index_in_set < 4) {
+			while (min_diff_template_index < match_results.size() &&
+				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES < 10) {
 				min_diff_template_index++;
 			}
 		}
-		else if (index_in_set < 2) {
-			while (match_results[min_diff_template_index].template_index / 3 <= 9 && match_results[min_diff_template_index].template_index != 14) {
+		// 同理 字符图片索引大于等于4，说明是数字，那么当对应模板是字母的时候应该放弃这个匹配（即使更符合），继续寻找，直到其符合对应模板为数字
+		else if (index_in_set >= 4) {
+			while (min_diff_template_index < match_results.size() &&
+				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES >= 10) {
 				min_diff_template_index++;
 			}
 		}
 	}
 	
-	int index = match_results[min_diff_template_index].template_index / 3;
+	int index = match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES;
 	switch (index) {
 	case 0:
 	case 1:
@@ -110,15 +124,13 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	case 9:
 		return index + '0';
 	case 10:
-		return 'B';
-	case 11:
 		return 'I';
-	case 12:
-		return 'N';
-	case 13:
+	case 11:
 		return 'S';
-	case 14:
-		return 'X';
+	case 12:
+		return 'B';
+	case 13:
+		return 'N';
 	default:
 		return ' ';
 	}
@@ -144,7 +156,6 @@ RecognizeResult Recognizer::recognize() {
 	for (int i = 0; i < image_set.size(); i++) {
 		res.append(1, charRecognizer(image_set[i], i));
 	}
-	//cout << res << endl;
 	
 	return {
 		res

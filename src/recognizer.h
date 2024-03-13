@@ -10,6 +10,9 @@
 
 #pragma once
 
+#define N_TEMPLATE 4			///< 模板图片套数，依此参数和模板图片索引计算得到对应字符
+#define N_TEMPLATE_IMAGES 14	///< 每套模板字符图片数量，依此参数和模板图片索引计算得到对应字符
+
 #include <opencv2\opencv.hpp>
 #include <utility>
 #include <iostream>

@@ -10,6 +10,15 @@
 
 #pragma once
 
+#define ROI_Y_VALID_P_THRESHOLD 100			///< 提取y方向ROI感兴趣行时的像素点灰度值阈值
+#define ROI_Y_VALID_NWP_THRESHOLD 35		///< 提取y方向ROI感兴趣行时的行白色像素数（n_white_pixels）阈值
+#define ROI_Y_RANGE_MIN_THERSHOLD 40		///< y方向ROI的最小长度阈值
+#define ROI_Y_RANGE_MAX_THERSHOLD 400		///< y方向ROI的最大长度阈值
+#define ROI_Y_CONTIUOUS_NWPD_THRESHOLD 300	///< 判断y方向ROI行为连续区域时的行白像素值的最大差值（n_white_pixels_difference）阈值
+
+#define ROI_X_VALID_P_THRESHOLD 100			///< 提取x方向ROI感兴趣行时的像素点灰度值阈值
+
+
 #include <opencv2\opencv.hpp>
 #include <windows.h>
 #include <utility>
@@ -65,8 +74,8 @@ private:
 	std::vector<cv::Mat> processed_image_set;
 
 	// 分步的图像处理函数
-	int sort_mid(int val[]);						///< 获取数组的中值 
-	cv::Mat resize(cv::Mat&);						///< 得到等比例转换为指定宽度的图像
+	int sort_mid(int val[], int);					///< 获取数组的中值 
+	cv::Mat resize(cv::Mat&, double);				///< 得到等比例转换为指定宽度的图像
 	cv::Mat gray(cv::Mat&);							///< 获得灰度化图像
 	cv::Mat fitler(cv::Mat&);						///< 获得滤波降噪的图像
 	cv::Mat threshold(cv::Mat&);					///< 获得二值化图像

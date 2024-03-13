@@ -14,11 +14,12 @@ using namespace std;
 
 /**@brief 得到等比例转换为指定宽度的图像
  * @param[in] input_image 源图片引用
+ * @param[in] width 指定宽度
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::resize(cv::Mat& input_image) {
+cv::Mat Preprocessor::resize(cv::Mat& input_image, double width) {
 	cv::Mat res_image;
-	double width = 1200;
+	//double width = 1200;
 	double height = width * (double)raw_image.rows / raw_image.cols;
 	cv::resize(input_image, res_image, cv::Size(width, height));
 	return res_image;
@@ -69,11 +70,12 @@ cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
 
 /**@brief 获取数组的中值
  * @param[in] val int类型数组
+ * @param[in] n 数组长度
  * @return 数组中值
  */
-int Preprocessor::sort_mid(int val[]){
-	sort(val, val+8);
-	return val[4];
+int Preprocessor::sort_mid(int val[], int n){
+	sort(val, val + n - 1);
+	return val[n/2];
 }
 
 /**@brief 获得滤波降噪的图像
@@ -95,7 +97,7 @@ cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
 			for (int k = 0; k < 9; k++) {
 				neighbor[k] = input_image.at<uchar>(i + dx[k], j + dy[k]);
 			}
-			mid_val = sort_mid(neighbor);
+			mid_val = sort_mid(neighbor, 9);
 			res_image.at<uchar>(i, j) = mid_val;
 		}
 	}
@@ -109,8 +111,8 @@ cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
  */
 cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
 	cv::Mat res_image;
-	cv::threshold(input_image, res_image, 0, 255, 1 | cv::THRESH_OTSU);
-	//cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_MEAN_C, 1, 159, 18);	// use autoadaptive threshold method
+	//cv::threshold(input_image, res_image, 0, 255, 1 | cv::THRESH_OTSU);
+	cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_MEAN_C, 1, 159, 18);	// use autoadaptive threshold method
 	return res_image;
 }
 
@@ -146,7 +148,7 @@ cv::Mat Preprocessor::flood_fill(cv::Mat& input_image) {
 			if (neighbor_pixel_x < 0 || neighbor_pixel_y < 0 || neighbor_pixel_x >= res_image.rows || neighbor_pixel_y >= res_image.cols) continue;
 			if (res_image.at<uchar>(neighbor_pixel_x, neighbor_pixel_y) != 0) {
 				res_image.at<uchar>(neighbor_pixel_x, neighbor_pixel_y) = 0;
-				q.push({ neighbor_pixel_x,neighbor_pixel_y });
+				q.push({ neighbor_pixel_x, neighbor_pixel_y });
 			}
 		}
 	}
@@ -169,7 +171,7 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 		uchar* cur_row_ptr = input_image.ptr(i);
 		// 遍历当前行像素点
 		for (int j = 0; j < input_image.cols; j++) {
-			if (*(cur_row_ptr + j) >= 100) while_pixel_sum++;		// 计数偏白色的像素点（取100为阈值，已二值化后的图像，即为计数白像素点）
+			if (*(cur_row_ptr + j) >= ROI_Y_VALID_P_THRESHOLD) while_pixel_sum++;		// 计数偏白色的像素点（取ROI_Y_VALID_P_THRESHOLD为阈值，已二值化后的图像，即为计数白像素点）
 		}
 		rows_white_pixels.push_back(while_pixel_sum);				// 保存计数
 		histogram_points.push_back(cv::Point(while_pixel_sum, i));	// 保存？中点？points也许反映的不是输入图片上的点而是“直方图”，而sum除以2是为了缩减直方图长度
@@ -179,13 +181,13 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 	int idx = -1;
 	// 遍历原始图片行白像素数值
 	for (int i = 0; i < rows_white_pixels.size() / 2; i++) {		// 貌似只看了一半，为什么？
-		// 取白色像素数量35为阈值（魔法数字差评）
-		if (rows_white_pixels[i] >= 35) {
+		// 取白色像素数量ROI_Y_VALID_NWP_THRESHOLD为阈值（魔法数字差评）
+		if (rows_white_pixels[i] >= ROI_Y_VALID_NWP_THRESHOLD) {
 			RangeStructWithID item = { ++idx, {i, 0} };				// 设置区域id，始点，终点暂记为0
 			ROI_range_tmp.push_back(item);
 			int idx = i;
 			// 跳过连续的符合条件的行
-			while (rows_white_pixels[idx] >= 35) {
+			while (rows_white_pixels[idx] >= ROI_Y_VALID_NWP_THRESHOLD) {
 				idx++;
 			}
 			ROI_range_tmp[item.id].range.end = idx;					// 设置区域终点
@@ -199,13 +201,13 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 	
 	// 若区域过小或过大（需要进一步切分），重新获取ROI
 	priority_queue<double> heap;	// 最大堆，维护最大的行白像素值
-	if (ROI_range_y_end - ROI_range_y_begin >= 400 || ROI_range_y_end - ROI_range_y_begin <= 40) {
+	if (ROI_range_y_end - ROI_range_y_begin >= ROI_Y_RANGE_MAX_THERSHOLD || ROI_range_y_end - ROI_range_y_begin <= ROI_Y_RANGE_MIN_THERSHOLD) {
 		ROI_range_tmp.clear();		// 清除ROI区域缓存
 		
 		idx = -1;
 		for (int i = 0; i < rows_white_pixels.size() / 2; i++) {
 			// 若行白色像素超过阈值，且和目前存在的最大的行白像素值的差小于阈值（保证区域内行白像素数接近）
-			if (rows_white_pixels[i] >= 35 && (!heap.size() || heap.top() - rows_white_pixels[i] <= 300)) {
+			if (rows_white_pixels[i] >= ROI_Y_VALID_P_THRESHOLD && (!heap.size() || heap.top() - rows_white_pixels[i] <= ROI_Y_CONTIUOUS_NWPD_THRESHOLD)) {
 				// 则加入该行
 				heap.push(rows_white_pixels[i]); 
 				RangeStructWithID item = { ++idx, {i, 0} };
@@ -213,7 +215,7 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 				
 				int idx = i;
 				// 处理连续的满足同样条件的行（使其作为ROI的一部分）
-				while (rows_white_pixels[idx] >= 35 && heap.top() - rows_white_pixels[idx] <= 300) {
+				while (rows_white_pixels[idx] >= ROI_Y_VALID_NWP_THRESHOLD && heap.top() - rows_white_pixels[idx] <= ROI_Y_CONTIUOUS_NWPD_THRESHOLD) {
 					heap.push(rows_white_pixels[idx++]);
 				}
 				// 设置ROI终点
@@ -255,7 +257,7 @@ std::vector<cv::Mat> Preprocessor::get_ROI_x(cv::Mat& input_image) {
 		int num = 0;
 		for (int j = 0; j < input_image.rows; j++) {
 			uchar* ch = input_image.ptr(j);
-			if (*(ch + i) >= 103) num++;
+			if (*(ch + i) >= ROI_X_VALID_P_THRESHOLD) num++;
 		}
 		num_area.push_back(num);
 	}
@@ -321,7 +323,7 @@ Preprocessor::Preprocessor(cv::Mat input_image) {
 /**@brief 执行处理流程的函数
  */
 void Preprocessor::preprocess() {
-	resized_image = resize(raw_image);
+	resized_image = resize(raw_image, 1200);
 	gray_image = gray(resized_image);
 	fitlered_image = fitler(gray_image);
 	threshold_image = threshold(fitlered_image);
@@ -351,7 +353,7 @@ void Preprocessor::dbg_save(string filename, string save_path) {
 		bool f = CreateDirectory(save_path_wstr.c_str(), NULL);
 		if (f) std::cout << "成功创建目录" + save_path << endl;
 		else {
-			std::cerr << "未能创建目录" + save_path << endl;
+			std::cerr << "未能创建目录" + save_path << "：目录已存在" << endl;
 			return;
 		}
 	}
@@ -361,7 +363,7 @@ void Preprocessor::dbg_save(string filename, string save_path) {
 	save_path_wstr = std::wstring(save_path.begin(), save_path.end());
 	LPCWSTR sw = save_path_wstr.c_str();
 	bool f = CreateDirectory(sw, NULL);
-	if (f) std::cout << "成功保存分步处理图像到" + save_path << endl;
+	if (f) std::cout << "成功创建目录" + save_path << endl;
 	else {
 		std::cerr << "未能创建目录" + save_path << endl;
 		return;
@@ -378,4 +380,6 @@ void Preprocessor::dbg_save(string filename, string save_path) {
 	for (int i = 0; i < processed_image_set.size(); i++) {
 		imwrite(save_path + filename + "_08_spilted_" + to_string(i) + ".jpg", processed_image_set[i]);
 	}
+
+	std::cout << "成功保存分步预处理图像到" + save_path << endl;
 }

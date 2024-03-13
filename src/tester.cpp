@@ -81,7 +81,7 @@ void Tester::test(bool save_preprocessed_images, std::string preprocessed_images
 
 		isbn_recognize_results.push_back(digit_filter(res.res));
 
-		show_progerss_bar(i+1, images.size());
+		show_progerss_bar(i + 1, images.size());
 	}
 }
 

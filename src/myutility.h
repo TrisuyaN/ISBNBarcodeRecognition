@@ -6,7 +6,7 @@ void show_progerss_bar(int progress, int total) {
 	std::cout << "\033[2J\033[H";
 	int cur = ((double)progress / (double)total) * 50;
 
-	std::cout << "Progress: [";
+	std::cout << "½ø¶È: [";
 	for (int k = 0; k < cur; ++k)
 		std::cout << "#";
 	for (int l = cur; l < 50; ++l)
