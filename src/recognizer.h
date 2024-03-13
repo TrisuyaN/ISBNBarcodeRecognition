@@ -10,10 +10,7 @@
 
 #pragma once
 
-#define N_TEMPLATE 4								///< 模板图片套数，依此参数和模板图片索引计算得到对应字符
-#define N_TEMPLATE_IMAGES 14						///< 每套模板字符图片数量，依此参数和模板图片索引计算得到对应字符
-#define S_INPUT_CHAR_IMAGE_THRESHOLD 900			///< 字符图片大小阈值，小于此阈值则拒绝识别返回空格字符
-#define RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD 1.2		///< 字符图片行列比值的阈值，小于此阈值则拒绝识别返回空格字符
+#include "args.h"
 
 #include <opencv2\opencv.hpp>
 #include <utility>

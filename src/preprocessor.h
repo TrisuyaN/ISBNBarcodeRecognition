@@ -10,14 +10,7 @@
 
 #pragma once
 
-#define ROI_Y_VALID_P_THRESHOLD 100			///< 提取y方向ROI感兴趣行时的像素点灰度值阈值
-#define ROI_Y_VALID_NWP_THRESHOLD 35		///< 提取y方向ROI感兴趣行时的行白色像素数（n_white_pixels）阈值
-#define ROI_Y_RANGE_MIN_THERSHOLD 40		///< y方向ROI的最小长度阈值
-#define ROI_Y_RANGE_MAX_THERSHOLD 400		///< y方向ROI的最大长度阈值
-#define ROI_Y_CONTIUOUS_NWPD_THRESHOLD 300	///< 判断y方向ROI行为连续区域时的行白像素值的最大差值（n_white_pixels_difference）阈值
-
-#define ROI_X_VALID_P_THRESHOLD 100			///< 提取x方向ROI感兴趣行时的像素点灰度值阈值
-
+#include "args.h"
 
 #include <opencv2\opencv.hpp>
 #include <windows.h>

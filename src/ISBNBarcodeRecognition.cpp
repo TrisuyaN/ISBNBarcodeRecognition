@@ -32,17 +32,21 @@
 using namespace std;
 using namespace cv;
 
-// 在此处设置程序运行参数
-const string test_images_path = "img\\test1\\";
+// 在此处设置程序运行路径参数
+const string test_images_path = "img\\test2\\";
 const string template_images_path = "img\\templates\\";
-const string preprocessed_images_save_path = "preprocessed_images_save\\";
 
+const string preprocessed_images_save_path = "preprocessed_images_save\\";
+const string out_file_name = "out.txt";
+const string cmp_res_save_path = test_images_path + preprocessed_images_save_path + out_file_name;
+const string args_save_path = test_images_path + preprocessed_images_save_path + out_file_name;
 
 int main() {
 #ifdef OPENCVTEST
 	opencv_test();
 #endif
 	Tester tester(test_images_path, template_images_path);
+	tester.saveArgs(args_save_path);
 	tester.test(SAVE_PREPROCESSED_IMAGES, preprocessed_images_save_path);
-	tester.calcAccuracy();
+	tester.calcAccuracy(cmp_res_save_path);
 }

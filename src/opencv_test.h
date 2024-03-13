@@ -10,13 +10,7 @@
 
 #pragma once
 
-//#define OPENCVTEST				///< OpenCV测试，注释此宏来禁用测试
-
-#ifdef OPENCVTEST
-#define OPENCV_CAMERA_TEST		///< 测试1：打开摄像头
-#define OPENCV_IMAGE_TEST		///< 测试2：打开 .\img\test.jpg 并保存为 test.bmp。最后删除bmp文件
-#define OPENCV_GLOB_TEST		///< 测试2：读取 .\img\glod\*.jpg 并转换为 cv::Mat，最后依次打开
-#endif
+#include "args.h"
 
 #ifdef OPENCVTEST
 #include <opencv2\opencv.hpp>

@@ -87,9 +87,37 @@ void Tester::test(bool save_preprocessed_images, std::string preprocessed_images
 	}
 }
 
-void Tester::saveCmpResToFile(std::string cur_isbn_answer, std::string cur_isbn_recognize_result, int i) {
+void Tester::saveArgs(std::string save_path) {
 	std::fstream res_file;
-	res_file.open("img\\out.txt", std::ios::out | std::ios::app);
+	res_file.open(save_path, std::ios::out | std::ios::app);
+
+	res_file
+		<< "=========================================================" << std::endl
+		<< "args: " << std::endl
+		<< "=========================================================" << std::endl
+		<< "ROI_Y_VALID_P_THRESHOLD: " << ROI_Y_VALID_P_THRESHOLD << std::endl
+		<< "ROI_Y_VALID_NWP_THRESHOLD: " << ROI_Y_VALID_NWP_THRESHOLD << std::endl
+		<< "ROI_Y_RANGE_MIN_THERSHOLD: " << ROI_Y_RANGE_MIN_THERSHOLD << std::endl
+		<< "ROI_Y_RANGE_MAX_THERSHOLD: " << ROI_Y_RANGE_MAX_THERSHOLD << std::endl
+		<< "ROI_Y_CONTIUOUS_NWPD_THRESHOLD: " << ROI_Y_CONTIUOUS_NWPD_THRESHOLD << std::endl
+		<< "ROI_X_VALID_P_THRESHOLD: " << ROI_X_VALID_P_THRESHOLD << std::endl
+		<< "N_TEMPLATE: " << N_TEMPLATE << std::endl
+		<< "N_TEMPLATE_IMAGES: " << N_TEMPLATE_IMAGES << std::endl
+		<< "S_INPUT_CHAR_IMAGE_THRESHOLD: " << S_INPUT_CHAR_IMAGE_THRESHOLD << std::endl
+		<< "RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD: " << RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD << std::endl
+		<< "=========================================================" << std::endl << std::endl;
+}
+
+void Tester::saveCmpResToFile(std::string save_path, std::string cur_isbn_answer, std::string cur_isbn_recognize_result, int i) {
+	std::fstream res_file;
+	res_file.open(save_path, std::ios::out | std::ios::app);
+
+	if (i == 0) {
+		res_file
+			<< "=========================================================" << std::endl
+			<< "CompareResults: " << std::endl
+			<< "=========================================================" << std::endl;
+	}
 
 	res_file << image_files[i] << ":\t";
 	if (cur_isbn_answer == cur_isbn_recognize_result) {
@@ -106,7 +134,7 @@ void Tester::saveCmpResToFile(std::string cur_isbn_answer, std::string cur_isbn_
 	char_total += cur_isbn_answer.length();
 }
 
-void Tester::calcAccuracy() {
+void Tester::calcAccuracy(std::string save_path) {
 	int n = images.size();
 	for (int i = 0; i < n; i++) {
 		std::string cur_isbn_answer = isbn_answers[i];
@@ -125,7 +153,7 @@ void Tester::calcAccuracy() {
 		}
 
 		// 逐行保存文件名、答案ISBN、识别ISBN和识别结果到文件
-		saveCmpResToFile(cur_isbn_answer, cur_isbn_recognize_result, i);
+		saveCmpResToFile(save_path, cur_isbn_answer, cur_isbn_recognize_result, i);
 	}
 
 	ISBN_accuracy = (double)ISBN_test_accurate / (double)ISBN_test_total;

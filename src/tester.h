@@ -16,7 +16,6 @@
 #include "opencv2\opencv.hpp"
 
 #define FILE_READ_FAILURE -1
-
 #define SAVE_PREPROCESSED_IMAGES 1
 #define NOSAVE_PREPROCESSED_IMAGES 0
 
@@ -39,12 +38,13 @@ private:
 	double char_accuracy;
 
 	std::string digitFilter(std::string);
-	void saveCmpResToFile(std::string, std::string, int);
+	void saveCmpResToFile(std::string, std::string, std::string, int);
 	void readImages();
 	void getISBNAnswers();
 
 public:
 	Tester(std::string, std::string);
 	void test(bool, std::string preprocessed_images_savepath);
-	void calcAccuracy();
+	void calcAccuracy(std::string);
+	void saveArgs(std::string);
 };

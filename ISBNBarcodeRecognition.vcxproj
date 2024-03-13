@@ -140,6 +140,7 @@
     <ClCompile Include="src\tester.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\args.h" />
     <ClInclude Include="src\myutility.h" />
     <ClInclude Include="src\recognizer.h" />
     <ClInclude Include="src\preprocessor.h" />
