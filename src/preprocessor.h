@@ -1,6 +1,6 @@
 /**@file		preprocessor.h
-* @brief		Í¼Æ¬Ô¤´¦ÀíÆ÷ÀàÍ·ÎÄ¼ş
-* @details		Í¼Æ¬Ô¤´¦ÀíÆ÷ÀàÍ·ÎÄ¼ş
+* @brief		å›¾ç‰‡é¢„å¤„ç†å™¨ç±»å¤´æ–‡ä»¶
+* @details		å›¾ç‰‡é¢„å¤„ç†å™¨ç±»å¤´æ–‡ä»¶
 * @author		al_1suyan
 * @date			2024-3-12
 * @version		V0.1.0
@@ -11,6 +11,7 @@
 #pragma once
 
 #include <opencv2\opencv.hpp>
+#include <windows.h>
 #include <utility>
 #include <iostream>
 #include <vector>
@@ -21,38 +22,38 @@
 
 /**@struct info
 * @brief Coordinate \n
-* ×ø±ê
+* åæ ‡
 */
 struct Coordinate {
-	int x;					///< x×ø±ê
-	int y;					///< y×ø±ê
+	int x;					///< xåæ ‡
+	int y;					///< yåæ ‡
 };
 
 /**@struct info
 * @brief RangeStruct \n
-* cv::RangeµÄÆğÊ¼ĞÅÏ¢
+* cv::Rangeçš„èµ·å§‹ä¿¡æ¯
 */
 struct RangeStruct {
-	int start;				///< RangeÆğÊ¼
-	int end;				///< RangeÖÕµã
+	int start;				///< Rangeèµ·å§‹
+	int end;				///< Rangeç»ˆç‚¹
 };
 
 /**@struct info
 * @brief RangeStructWithID \n
-* Ò»×é´øÓĞIDµÄcv::RangeµÄÆğÊ¼ĞÅÏ¢£¬ÓÃÓÚÇø·Ö¶à¸öRange
+* ä¸€ç»„å¸¦æœ‰IDçš„cv::Rangeçš„èµ·å§‹ä¿¡æ¯ï¼Œç”¨äºåŒºåˆ†å¤šä¸ªRange
 */
 struct RangeStructWithID {
-	int id;					///< RangeÆğÊ¼ĞÅÏ¢ID
-	RangeStruct range;		///< RangeÆğÊ¼ĞÅÏ¢
+	int id;					///< Rangeèµ·å§‹ä¿¡æ¯ID
+	RangeStruct range;		///< Rangeèµ·å§‹ä¿¡æ¯
 };
 
 /**
 * @brief Preprocessor \n
-* Í¼Æ¬Ô¤´¦ÀíÆ÷Àà£¬´¦Àíµ¥¸öISBN±êÇ©Í¼Æ¬²¢·Ö¸îÎªÒ»×é×Ö·ûÍ¼Ïñ¹©RecognizerÀàÊ¶±ğ´¦Àí£¬Í¬Ê±Ìá¹©ÁËĞí¶à¿É¸´ÓÃµÄÊµÓÃº¯Êı£¬²¢Ö§³Ö±£´æÃ¿Ò»²½´¦Àí½á¹ûÍ¼Ïñ
+* å›¾ç‰‡é¢„å¤„ç†å™¨ç±»ï¼Œå¤„ç†å•ä¸ªISBNæ ‡ç­¾å›¾ç‰‡å¹¶åˆ†å‰²ä¸ºä¸€ç»„å­—ç¬¦å›¾åƒä¾›Recognizerç±»è¯†åˆ«å¤„ç†ï¼ŒåŒæ—¶æä¾›äº†è®¸å¤šå¯å¤ç”¨çš„å®ç”¨å‡½æ•°ï¼Œå¹¶æ”¯æŒä¿å­˜æ¯ä¸€æ­¥å¤„ç†ç»“æœå›¾åƒ
 */
 class Preprocessor{
 private:
-	// ·Ö²½´¦ÀíµÄ½á¹û
+	// åˆ†æ­¥å¤„ç†çš„ç»“æœ
 	cv::Mat raw_image;
 	cv::Mat resized_image;
 	cv::Mat gray_image;
@@ -63,21 +64,21 @@ private:
 	cv::Mat ROI_image_y;
 	std::vector<cv::Mat> processed_image_set;
 
-	// ·Ö²½µÄÍ¼Ïñ´¦Àíº¯Êı
-	int sort_mid(int val[]);						///< »ñÈ¡Êı×éµÄÖĞÖµ 
-	cv::Mat resize(cv::Mat&);						///< µÃµ½µÈ±ÈÀı×ª»»ÎªÖ¸¶¨¿í¶ÈµÄÍ¼Ïñ
-	cv::Mat gray(cv::Mat&);							///< »ñµÃ»Ò¶È»¯Í¼Ïñ
-	cv::Mat fitler(cv::Mat&);						///< »ñµÃÂË²¨½µÔëµÄÍ¼Ïñ
-	cv::Mat threshold(cv::Mat&);					///< »ñµÃ¶şÖµ»¯Í¼Ïñ
-	cv::Mat rectify(cv::Mat&);						///< »ñµÃµ÷Õû½Ç¶ÈºóµÄÊúÖ±Í¼Ïñ
-	cv::Mat flood_fill(cv::Mat&);					///< »ñµÃË®Âş·¨È¥³ı°×±ßµÄÍ¼Ïñ
-	cv::Mat get_ROI_y_image(cv::Mat&);				///< µÃµ½ÊúÖ±·½ÏòµÄROIÇøÓòÍ¼Ïñ
-	std::vector<cv::Mat> get_ROI_x(cv::Mat&);		///< ¶ÔÊúÖ±·½ÏòROIÇĞ¸î´¦ÀíµÃµ½ISBNµÄ×Ö·ûÍ¼Ïñ¼¯
+	// åˆ†æ­¥çš„å›¾åƒå¤„ç†å‡½æ•°
+	int sort_mid(int val[]);						///< è·å–æ•°ç»„çš„ä¸­å€¼ 
+	cv::Mat resize(cv::Mat&);						///< å¾—åˆ°ç­‰æ¯”ä¾‹è½¬æ¢ä¸ºæŒ‡å®šå®½åº¦çš„å›¾åƒ
+	cv::Mat gray(cv::Mat&);							///< è·å¾—ç°åº¦åŒ–å›¾åƒ
+	cv::Mat fitler(cv::Mat&);						///< è·å¾—æ»¤æ³¢é™å™ªçš„å›¾åƒ
+	cv::Mat threshold(cv::Mat&);					///< è·å¾—äºŒå€¼åŒ–å›¾åƒ
+	cv::Mat rectify(cv::Mat&);						///< è·å¾—è°ƒæ•´è§’åº¦åçš„ç«–ç›´å›¾åƒ
+	cv::Mat flood_fill(cv::Mat&);					///< è·å¾—æ°´æ¼«æ³•å»é™¤ç™½è¾¹çš„å›¾åƒ
+	cv::Mat get_ROI_y_image(cv::Mat&);				///< å¾—åˆ°ç«–ç›´æ–¹å‘çš„ROIåŒºåŸŸå›¾åƒ
+	std::vector<cv::Mat> get_ROI_x(cv::Mat&);		///< å¯¹ç«–ç›´æ–¹å‘ROIåˆ‡å‰²å¤„ç†å¾—åˆ°ISBNçš„å­—ç¬¦å›¾åƒé›†
 
 public:
-	// ¹©Íâ²¿Ê¹ÓÃµÄ½Ó¿Ú
-	Preprocessor(cv::Mat);							///< ¹¹Ôìº¯Êı£¬½ÓÊÜÒ»¸öÊäÈëÍ¼Ïñ
-	void preprocess();								///< Ö´ĞĞ´¦ÀíÁ÷³Ì
-	void dbg_save(std::string);						///< ±£´æËùÓĞ´¦ÀíºóµÄÎÄ¼ş
-	std::vector<cv::Mat> get_preprocess_result();	///< »ñÈ¡´¦Àí½á¹û
+	// ä¾›å¤–éƒ¨ä½¿ç”¨çš„æ¥å£
+	Preprocessor(cv::Mat);							///< æ„é€ å‡½æ•°ï¼Œæ¥å—ä¸€ä¸ªè¾“å…¥å›¾åƒ
+	void preprocess();								///< æ‰§è¡Œå¤„ç†æµç¨‹
+	void dbg_save(std::string, std::string);						///< ä¿å­˜æ‰€æœ‰å¤„ç†åçš„æ–‡ä»¶
+	std::vector<cv::Mat> get_preprocess_result();	///< è·å–å¤„ç†ç»“æœ
 };

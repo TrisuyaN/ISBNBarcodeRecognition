@@ -1,21 +1,21 @@
 /**@file		preprocessor.cpp
-* @brief		图片预处理器类源文件
-* @details		图片预处理器类，处理单个ISBN标签图片并分割为一组字符图像供Recognizer类识别处理，同时提供了许多可复用的实用函数，并支持保存每一步处理结果图像
-* @author		al_1suyan
-* @date			2024-3-12
-* @version		V0.1.0
-*
-**********************************************************************************
-*/
+ * @brief		图片预处理器类源文件
+ * @details		图片预处理器类，处理单个ISBN标签图片并分割为一组字符图像供Recognizer类识别处理，同时提供了许多可复用的实用函数，并支持保存每一步处理结果图像
+ * @author		al_1suyan
+ * @date			2024-3-12
+ * @version		V0.1.0
+ *
+ **********************************************************************************
+ */
 
 #include "preprocessor.h"
 
 using namespace std;
 
 /**@brief 得到等比例转换为指定宽度的图像
-* @param[in] input_image 源图片引用
-* @return 处理后的图像
-*/
+ * @param[in] input_image 源图片引用
+ * @return 处理后的图像
+ */
 cv::Mat Preprocessor::resize(cv::Mat& input_image) {
 	cv::Mat res_image;
 	double width = 1200;
@@ -25,9 +25,9 @@ cv::Mat Preprocessor::resize(cv::Mat& input_image) {
 }
 
 /**@brief 获得灰度化图像
-* @param[in] input_image 源图片引用
-* @return 处理后的图像
-*/
+ * @param[in] input_image 源图片引用
+ * @return 处理后的图像
+ */
 cv::Mat Preprocessor::gray(cv::Mat& input_image) {
 	cv::Mat res_image;
 	cvtColor(input_image, res_image, cv::COLOR_RGB2GRAY);
@@ -35,20 +35,20 @@ cv::Mat Preprocessor::gray(cv::Mat& input_image) {
 }
 
 /**@brief 获得调整角度后的竖直图像
-* @param[in] input_image 源图片引用
-* @return 处理后的图像
-*/
+ * @param[in] input_image 源图片引用
+ * @return 处理后的图像
+ */
 cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
 	cv::Mat res_image;
 	cv::Mat pic_edge;
 	cv::Sobel(input_image, pic_edge, -1, 0, 1, 5);
-
+	
 	vector<cv::Vec2f> Line;
 	HoughLines(pic_edge, Line, 1, CV_PI / 180, 180, 0, 0);
-
+	
 	double Angle = 0;
 	int LineCnt = 0;
-
+	
 	for (int i = 0; i < Line.size(); i++) {
 		if (Line[i][1] < 1.2 || Line[i][1] > 1.8) continue;
 		Angle += Line[i][1];
@@ -59,33 +59,33 @@ cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
 	Angle = 180 * Angle / CV_PI - 90;
 	cv::Mat pic_tmp = cv::getRotationMatrix2D(cv::Point(input_image.cols / 2, input_image.rows / 2), Angle, 1);
 	cv::Size src_size = cv::Size(input_image.cols * 1.42, input_image.rows);
-
+	
 	cv::warpAffine(input_image, res_image, pic_tmp, src_size);
 	//cv::warpAffine(this->src_copy_image, this->src_copy_image, pic_tmp, src_size);	// 绘制直线到复制的原始图片
-
+	
 	return res_image;
 }
 
 
 /**@brief 获取数组的中值
-* @param[in] val int类型数组
-* @return 数组中值
-*/
+ * @param[in] val int类型数组
+ * @return 数组中值
+ */
 int Preprocessor::sort_mid(int val[]){
 	sort(val, val+8);
 	return val[4];
 }
 
 /**@brief 获得滤波降噪的图像
-* @param[in] input_image 源图片引用
-* @return 处理后的图像
-*/
+ * @param[in] input_image 源图片引用
+ * @return 处理后的图像
+ */
 cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
 	cv::Mat res_image = cv::Mat(input_image.rows, input_image.cols, CV_8UC1);
-    int dx[] = { 0,-1,0,1,-1,1,-1,0,1 };
-    int dy[] = { 0,1,1,1,0,0,-1,-1,-1 };
-    int neighbor[9], mid_val;
-
+	int dx[] = { 0,-1,0,1,-1,1,-1,0,1 };
+	int dy[] = { 0,1,1,1,0,0,-1,-1,-1 };
+	int neighbor[9], mid_val;
+	
 	for (int i = 0; i < input_image.rows; i++) {
 		for (int j = 0; j < input_image.cols; j++){
 			if (i == 0 || j == 0 || i == input_image.rows - 1 || j == input_image.cols - 1){
@@ -99,14 +99,14 @@ cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
 			res_image.at<uchar>(i, j) = mid_val;
 		}
 	}
-
+	
 	return res_image;
 }
 
 /**@brief 获得二值化图像
-* @param[in] input_image 源图片引用
-* @return 处理后的图像
-*/
+ * @param[in] input_image 源图片引用
+ * @return 处理后的图像
+ */
 cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
 	cv::Mat res_image;
 	cv::threshold(input_image, res_image, 0, 255, 1 | cv::THRESH_OTSU);
@@ -115,9 +115,9 @@ cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
 }
 
 /**@brief 获得水漫法去除白边的图像
-* @param[in] input_image 源图片引用
-* @return 处理后的图像
-*/
+ * @param[in] input_image 源图片引用
+ * @return 处理后的图像
+ */
 cv::Mat Preprocessor::flood_fill(cv::Mat& input_image) {
 	cv::Mat res_image = input_image;
 	int dx[] = { -1,0,1,-1,1,-1,0,1 };
@@ -135,14 +135,14 @@ cv::Mat Preprocessor::flood_fill(cv::Mat& input_image) {
 	for (int i = 0; i < res_image.rows; i++)
 		for (int j = res_image.cols - 1; j >= res_image.cols - 1; j--)
 			if (res_image.at<uchar>(i, j) != 0) q.push({ i,j });
-
+	
 	while (!q.empty()) {
 		Coordinate cur_pixel_coordinate = q.front(); q.pop();
 		int cur_pixel_x = cur_pixel_coordinate.x, cur_pixel_y = cur_pixel_coordinate.y;
 		for (int i = 0; i < 8; i++) {
 			int neighbor_pixel_x = cur_pixel_x + dx[i];
 			int neighbor_pixel_y = cur_pixel_y + dy[i];
-
+			
 			if (neighbor_pixel_x < 0 || neighbor_pixel_y < 0 || neighbor_pixel_x >= res_image.rows || neighbor_pixel_y >= res_image.cols) continue;
 			if (res_image.at<uchar>(neighbor_pixel_x, neighbor_pixel_y) != 0) {
 				res_image.at<uchar>(neighbor_pixel_x, neighbor_pixel_y) = 0;
@@ -154,15 +154,15 @@ cv::Mat Preprocessor::flood_fill(cv::Mat& input_image) {
 }
 
 /**@brief 得到竖直方向的ROI区域图像
-* @param[in] input_image 源图片引用
-* @return 处理后的图像
-*/
+ * @param[in] input_image 源图片引用
+ * @return 处理后的图像
+ */
 cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
-
+	
 	std::vector<int> rows_white_pixels;				// 存储行白色像素数
 	std::vector<cv::Point> histogram_points;		// 用于表示每一行的白像素值大于阈值（100）的数量
 	std::vector<RangeStructWithID> ROI_range_tmp;	// 暂时存储ROI的编号和起始
-
+	
 	// 从上到下遍历输入图片的行
 	for (int i = 0; i < input_image.rows; i++) {
 		int while_pixel_sum = 0;									// sum 计数每行符合条件（？）的像素点个数
@@ -175,7 +175,7 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 		histogram_points.push_back(cv::Point(while_pixel_sum, i));	// 保存？中点？points也许反映的不是输入图片上的点而是“直方图”，而sum除以2是为了缩减直方图长度
 		//if (i) cv::line(input_image, points[max(0, i - 1)], points[i], cv::Scalar(255, 0, 0), 2); // 画分割线？没有用 哦原来是在原始图片上画直方图
 	}
-
+	
 	int idx = -1;
 	// 遍历原始图片行白像素数值
 	for (int i = 0; i < rows_white_pixels.size() / 2; i++) {		// 貌似只看了一半，为什么？
@@ -194,14 +194,14 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 	}
 	// 取？？？为ROIy区域？
 	int ROI_range_y_begin = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.start, 
-		ROI_range_y_end = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.end;
-
+	ROI_range_y_end = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.end;
+	
 	
 	// 若区域过小或过大（需要进一步切分），重新获取ROI
 	priority_queue<double> heap;	// 最大堆，维护最大的行白像素值
 	if (ROI_range_y_end - ROI_range_y_begin >= 400 || ROI_range_y_end - ROI_range_y_begin <= 40) {
 		ROI_range_tmp.clear();		// 清除ROI区域缓存
-
+		
 		idx = -1;
 		for (int i = 0; i < rows_white_pixels.size() / 2; i++) {
 			// 若行白色像素超过阈值，且和目前存在的最大的行白像素值的差小于阈值（保证区域内行白像素数接近）
@@ -210,7 +210,7 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 				heap.push(rows_white_pixels[i]); 
 				RangeStructWithID item = { ++idx, {i, 0} };
 				ROI_range_tmp.push_back(item);
-
+				
 				int idx = i;
 				// 处理连续的满足同样条件的行（使其作为ROI的一部分）
 				while (rows_white_pixels[idx] >= 35 && heap.top() - rows_white_pixels[idx] <= 300) {
@@ -225,31 +225,31 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
 				while (heap.size()) heap.pop();
 			}
 		}
-
+		
 		// 重新设置新的ROI
 		ROI_range_y_begin = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.start;
 		ROI_range_y_end = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.end;
 	}
 	// 如果没有提取到导致开始小于结尾，或者太大，直接返回空Mat
 	if (ROI_range_y_begin >= ROI_range_y_end || ROI_range_y_begin > 114514) return cv::Mat();
-
+	
 	cv::Range ROI_range_y = cv::Range(ROI_range_y_begin, ROI_range_y_end);
 	cv::Mat ROI_image_y = input_image(cv::Range(ROI_range_y_begin, ROI_range_y_end), cv::Range::all());
-
+	
 	return ROI_image_y;
 }
 
 /**@brief 对竖直方向ROI切割处理得到ISBN的字符图像集
-* @param[in] input_image 源图片引用
-* @return 切割处理得到的字符图像集
-*/
+ * @param[in] input_image 源图片引用
+ * @return 切割处理得到的字符图像集
+ */
 std::vector<cv::Mat> Preprocessor::get_ROI_x(cv::Mat& input_image) {
 	// 类似get_ROI_y的方法继续对（输入的）结果区域逐列处理，获得ROI_range_x
 	std::vector<int> num_area;
 	std::vector<RangeStruct> num_ranges;
 	std::vector<cv::Mat> result_image_set;
 	cv::Range ROI_range_x;
-
+	
 	// 从左到右遍历输入图片的列
 	for (int i = 0; i < input_image.cols; i++) {
 		int num = 0;
@@ -259,7 +259,7 @@ std::vector<cv::Mat> Preprocessor::get_ROI_x(cv::Mat& input_image) {
 		}
 		num_area.push_back(num);
 	}
-
+	
 	for (int i = 0; i < num_area.size(); i++) {
 		if (num_area[i] >= 2) {
 			RangeStruct item = { max(i - 1, 0), 0 };
@@ -270,15 +270,15 @@ std::vector<cv::Mat> Preprocessor::get_ROI_x(cv::Mat& input_image) {
 			num_ranges.push_back(item);
 		}
 	}
-
+	
 	ROI_range_x.start = num_ranges[0].start;
 	ROI_range_x.end = num_ranges[num_ranges.size() - 1].end;
-
+	
 	//cv::Mat ROI_image_x = input_image(ROI_range_x, cv::Range::all());
-
+	
 	for (int i = 0; i < num_ranges.size(); i++) {
 		cv::Mat item_image = input_image(cv::Range::all(), cv::Range(num_ranges[i].start, num_ranges[i].end));
-
+		
 		int head = 0;
 		for (int j = 0; j < item_image.rows; j++) {
 			auto ff = item_image.ptr(j);
@@ -312,14 +312,14 @@ std::vector<cv::Mat> Preprocessor::get_ROI_x(cv::Mat& input_image) {
 
 
 /**@brief Preprocessor类构造函数
-* @param[in] input_image 待处理的图片引用
-*/
+ * @param[in] input_image 待处理的图片引用
+ */
 Preprocessor::Preprocessor(cv::Mat input_image) {
 	raw_image = input_image;
 }
 
 /**@brief 执行处理流程的函数
-*/
+ */
 void Preprocessor::preprocess() {
 	resized_image = resize(raw_image);
 	gray_image = gray(resized_image);
@@ -332,24 +332,50 @@ void Preprocessor::preprocess() {
 }
 
 /**@brief 得到最终字符图像集
-* @return Preprocessor类处理得到的最终字符图像集
-*/
+ * @return Preprocessor类处理得到的最终字符图像集
+ */
 std::vector<cv::Mat> Preprocessor::get_preprocess_result() {
 	return processed_image_set;
 }
 
 /**@brief 保存每一步处理的结果图像，用于Debug阶段检查图像处理
-* @param[in] save_path 保存路径
-*/
-void Preprocessor::dbg_save(string save_path) {
-	imwrite(save_path + "resized.jpg", resized_image);
-	imwrite(save_path + "gray.jpg", gray_image);
-	imwrite(save_path + "fitlered.jpg", fitlered_image);
-	imwrite(save_path + "threshold.jpg", threshold_image);
-	imwrite(save_path + "rectified.jpg", rectified_image);
-	imwrite(save_path + "flood_filled.jpg", flood_filled_image);
-	imwrite(save_path + "ROI_y.jpg", ROI_image_y);
+ * @param[in] filename 文件名
+ * @param[in] save_path 保存路径
+ */
+void Preprocessor::dbg_save(string filename, string save_path) {
+	std::wstring save_path_wstr;
+	// 创建目录
+	save_path_wstr = std::wstring(save_path.begin(), save_path.end());
+	if (GetFileAttributesW(save_path_wstr.c_str()) == INVALID_FILE_ATTRIBUTES) {
+		std::cout << save_path << "目录不存在，正在创建" << std::endl;
+		bool f = CreateDirectory(save_path_wstr.c_str(), NULL);
+		if (f) std::cout << "成功创建目录" + save_path << endl;
+		else {
+			std::cerr << "未能创建目录" + save_path << endl;
+			return;
+		}
+	}
+	
+	// 创建子目录
+	save_path = save_path + filename + "\\";
+	save_path_wstr = std::wstring(save_path.begin(), save_path.end());
+	LPCWSTR sw = save_path_wstr.c_str();
+	bool f = CreateDirectory(sw, NULL);
+	if (f) std::cout << "成功保存分步处理图像到" + save_path << endl;
+	else {
+		std::cerr << "未能创建目录" + save_path << endl;
+		return;
+	}
+	
+	// 写入文件
+	imwrite(save_path + filename + "_01_resized.jpg", resized_image);
+	imwrite(save_path + filename + "_02_gray.jpg", gray_image);
+	imwrite(save_path + filename + "_03_fitlered.jpg", fitlered_image);
+	imwrite(save_path + filename + "_04_threshold.jpg", threshold_image);
+	imwrite(save_path + filename + "_05_rectified.jpg", rectified_image);
+	imwrite(save_path + filename + "_06_flood_filled.jpg", flood_filled_image);
+	imwrite(save_path + filename + "_07_ROI_y.jpg", ROI_image_y);
 	for (int i = 0; i < processed_image_set.size(); i++) {
-		imwrite(save_path + to_string(i) + ".jpg", processed_image_set[i]);
+		imwrite(save_path + filename + "_08_spilted_" + to_string(i) + ".jpg", processed_image_set[i]);
 	}
 }
