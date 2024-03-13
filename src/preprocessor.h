@@ -59,7 +59,7 @@ private:
 	cv::Mat raw_image;
 	cv::Mat resized_image;
 	cv::Mat gray_image;
-	cv::Mat fitlered_image;
+	cv::Mat denoised_image;
 	cv::Mat threshold_image;
 	cv::Mat rectified_image;
 	cv::Mat flood_filled_image;
@@ -70,9 +70,10 @@ private:
 
 	// 分步的图像处理函数
 	int sortMid(int val[], int);					///< 获取数组的中值 
-	cv::Mat resize(cv::Mat&, double);				///< 得到等比例转换为指定宽度的图像
+	cv::Mat extractUpperHalf(cv::Mat);				///< 截取图片上部分，减少无用信息干扰
+	cv::Mat resize(cv::Mat, double);				///< 得到等比例转换为指定宽度的图像
 	cv::Mat gray(cv::Mat&);							///< 获得灰度化图像
-	cv::Mat fitler(cv::Mat&);						///< 获得滤波降噪的图像
+	cv::Mat denoise(cv::Mat&);						///< 获得滤波降噪的图像
 	cv::Mat threshold(cv::Mat&);					///< 获得二值化图像
 	cv::Mat rectify(cv::Mat&);						///< 获得调整角度后的竖直图像
 	cv::Mat floodFill(cv::Mat&);					///< 获得水漫法去除白边的图像

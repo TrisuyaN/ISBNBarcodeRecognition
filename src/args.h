@@ -26,8 +26,8 @@
 
 
 /// 字符图片筛选阈值参数
-#define S_INPUT_CHAR_IMAGE_THRESHOLD	900			///< 字符图片大小阈值，小于此阈值则拒绝识别返回空格字符
-#define RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD 1.2		///< 字符图片行列比值的阈值，小于此阈值则拒绝识别返回空格字符
+#define S_INPUT_CHAR_IMAGE_THRESHOLD	500			///< 字符图片大小阈值，小于此阈值则拒绝识别返回空格字符
+#define RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD 0.9		///< 字符图片行列比值的阈值，小于此阈值则拒绝识别返回空格字符
 
 
 /// 区域特判字符加权

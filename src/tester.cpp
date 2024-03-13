@@ -105,6 +105,8 @@ void Tester::saveArgs(std::string save_path) {
 		<< "N_TEMPLATE_IMAGES: " << N_TEMPLATE_IMAGES << std::endl
 		<< "S_INPUT_CHAR_IMAGE_THRESHOLD: " << S_INPUT_CHAR_IMAGE_THRESHOLD << std::endl
 		<< "RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD: " << RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD << std::endl
+		<< "BUFF: " << BUFF << std::endl
+		<< "DEBUFF: " << DEBUFF << std::endl
 		<< "=========================================================" << std::endl << std::endl;
 }
 

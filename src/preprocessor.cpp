@@ -2,7 +2,7 @@
  * @brief		图片预处理器类源文件
  * @details		图片预处理器类，处理单个ISBN标签图片并分割为一组字符图像供Recognizer类识别处理，同时提供了许多可复用的实用函数，并支持保存每一步处理结果图像
  * @author		al_1suyan
- * @date			2024-3-12
+ * @date		2024-3-12
  * @version		V0.1.0
  *
  **********************************************************************************
@@ -12,15 +12,30 @@
 
 using namespace std;
 
+cv::Mat Preprocessor::extractUpperHalf(cv::Mat input_image) {
+	// 检查输入图像是否为空
+	if (input_image.empty()) {
+		std::cerr << "Input image is empty." << std::endl;
+		return cv::Mat();
+	}
+
+	int height = input_image.rows;
+	int width = input_image.cols;
+	cv::Rect upperHalfRegion(0, 0, width, height * 0.45);
+	cv::Mat uhm = input_image(upperHalfRegion);
+
+	return resize(uhm, 1200);
+}
+
 /**@brief 得到等比例转换为指定宽度的图像
  * @param[in] input_image 源图片引用
  * @param[in] width 指定宽度
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::resize(cv::Mat& input_image, double width) {
+cv::Mat Preprocessor::resize(cv::Mat input_image, double width) {
 	cv::Mat res_image;
 	//double width = 1200;
-	double height = width * (double)raw_image.rows / raw_image.cols;
+	double height = width * (double)input_image.rows / input_image.cols;
 	cv::resize(input_image, res_image, cv::Size(width, height));
 	return res_image;
 }
@@ -68,6 +83,7 @@ cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
 }
 
 
+
 /**@brief 获取数组的中值
  * @param[in] val int类型数组
  * @param[in] n 数组长度
@@ -82,7 +98,11 @@ int Preprocessor::sortMid(int val[], int n){
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
+cv::Mat Preprocessor::denoise(cv::Mat& input_image) {
+	cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	cv::dilate(input_image, input_image, element);
+	cv::erode(input_image, input_image, element);
+
 	cv::Mat res_image = cv::Mat(input_image.rows, input_image.cols, CV_8UC1);
 	int dx[] = { 0,-1,0,1,-1,1,-1,0,1 };
 	int dy[] = { 0,1,1,1,0,0,-1,-1,-1 };
@@ -112,7 +132,9 @@ cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
 cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
 	cv::Mat res_image;
 	//cv::threshold(input_image, res_image, 0, 255, 1 | cv::THRESH_OTSU);
-	cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_MEAN_C, 1, 159, 18);	// use autoadaptive threshold method
+	//cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_MEAN_C, 1, 159, 18);
+	//cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, 1, 159, 18);
+	cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY_INV, 159, 18);
 	return res_image;
 }
 
@@ -340,10 +362,10 @@ Preprocessor::Preprocessor(cv::Mat input_image) {
 /**@brief 执行处理流程的函数
  */
 void Preprocessor::preprocess() {
-	resized_image = resize(raw_image, 1200);
+	resized_image = extractUpperHalf(raw_image);
 	gray_image = gray(resized_image);
-	fitlered_image = fitler(gray_image);
-	threshold_image = threshold(fitlered_image);
+	denoised_image = denoise(gray_image);
+	threshold_image = threshold(denoised_image);
 	rectified_image = rectify(threshold_image);
 	flood_filled_image = floodFill(rectified_image);
 	ROI_image_y = getROIYImage(flood_filled_image);
@@ -389,7 +411,7 @@ void Preprocessor::dbgSave(string filename, string save_path) {
 	// 写入文件
 	imwrite(save_path + filename + "_01_resized.jpg", resized_image);
 	imwrite(save_path + filename + "_02_gray.jpg", gray_image);
-	imwrite(save_path + filename + "_03_fitlered.jpg", fitlered_image);
+	imwrite(save_path + filename + "_03_denoised.jpg", denoised_image);
 	imwrite(save_path + filename + "_04_threshold.jpg", threshold_image);
 	imwrite(save_path + filename + "_05_rectified.jpg", rectified_image);
 	imwrite(save_path + filename + "_06_flood_filled.jpg", flood_filled_image);
