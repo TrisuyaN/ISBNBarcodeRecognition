@@ -47,4 +47,5 @@ public:
 	void test(bool, std::string preprocessed_images_savepath);
 	void calcAccuracy(std::string);
 	void saveArgs(std::string);
+	void saveResult(std::string);
 };

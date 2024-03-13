@@ -38,15 +38,14 @@ const string template_images_path = "img\\templates\\";
 
 const string preprocessed_images_save_path = "preprocessed_images_save\\";
 const string out_file_name = "out.txt";
-const string cmp_res_save_path = test_images_path + preprocessed_images_save_path + out_file_name;
-const string args_save_path = test_images_path + preprocessed_images_save_path + out_file_name;
+const string out_file_save_path = test_images_path + preprocessed_images_save_path + out_file_name;
 
 int main() {
 #ifdef OPENCVTEST
 	opencv_test();
 #endif
 	Tester tester(test_images_path, template_images_path);
-	tester.saveArgs(args_save_path);
 	tester.test(SAVE_PREPROCESSED_IMAGES, preprocessed_images_save_path);
-	tester.calcAccuracy(cmp_res_save_path);
+	tester.saveArgs(out_file_save_path);
+	tester.calcAccuracy(out_file_save_path);
 }

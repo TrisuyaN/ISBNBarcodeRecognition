@@ -131,7 +131,23 @@ void Tester::saveCmpResToFile(std::string save_path, std::string cur_isbn_answer
 		<< "\t[" << cur_isbn_recognize_result << "]"
 		<< std::endl;
 
-	char_total += cur_isbn_answer.length();
+	if (i == images.size() - 1) {
+		res_file
+			<< "=========================================================" << std::endl << std::endl;
+	}
+}
+
+void Tester::saveResult(std::string save_path) {
+	std::fstream res_file;
+	res_file.open(save_path, std::ios::out | std::ios::app);
+	res_file
+		<< "=========================================================" << std::endl
+		<< "Results: " << std::endl
+		<< "=========================================================" << std::endl
+		<< std::fixed << std::setprecision(2)
+		<< "ISBNAccuracy: " << ISBN_accuracy * 100 << "%" << std::endl
+		<< "DigitalCharAccuracy: " << char_accuracy * 100 << "%" << std::endl
+		<< "=========================================================" << std::endl << std::endl;
 }
 
 void Tester::calcAccuracy(std::string save_path) {
@@ -140,9 +156,12 @@ void Tester::calcAccuracy(std::string save_path) {
 		std::string cur_isbn_answer = isbn_answers[i];
 		std::string cur_isbn_recognize_result = isbn_recognize_results[i];
 
+		char_total += cur_isbn_answer.length();
+
 		if (cur_isbn_answer == cur_isbn_recognize_result) {
 			ISBN_test_accurate++;
 		}
+
 		int p = 0;
 		for (auto c : cur_isbn_recognize_result) {
 			if (c == cur_isbn_answer[p]) {
@@ -165,5 +184,6 @@ void Tester::calcAccuracy(std::string save_path) {
 		<< "ISBN准确率：" << ISBN_accuracy * 100 << "%" << std::endl
 		<< "数字字符准确率：" << char_accuracy * 100 << "%" << std::endl << std::endl
 		<< "按任意键结束...";
+	saveResult(save_path);
 	getchar();
 }
