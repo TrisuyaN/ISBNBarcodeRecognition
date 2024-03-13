@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-void show_progerss_bar(int progress, int total) {
+void showProgressBar(int progress, int total) {
 	std::cout << "\033[2J\033[H";
 	int cur = ((double)progress / (double)total) * 50;
 

@@ -10,6 +10,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <fstream>
 #include "recognizer.h"
 #include "preprocessor.h"
 #include "opencv2\opencv.hpp"
@@ -37,12 +38,13 @@ private:
 	int char_accurate;
 	double char_accuracy;
 
-	std::string digit_filter(std::string);
-	void read_images();
-	void get_isbn_answers();
+	std::string digitFilter(std::string);
+	void saveCmpResToFile(std::string, std::string, int);
+	void readImages();
+	void getISBNAnswers();
 
 public:
 	Tester(std::string, std::string);
 	void test(bool, std::string preprocessed_images_savepath);
-	void calc_accuracy();
+	void calcAccuracy();
 };

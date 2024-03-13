@@ -10,7 +10,7 @@
 #include "tester.h"
 #include "myutility.h"
 
-std::string Tester::digit_filter(std::string string_input) {
+std::string Tester::digitFilter(std::string string_input) {
 	std::string res = "";
 	for (auto c : string_input) {
 		if (isdigit(c)) {
@@ -20,7 +20,7 @@ std::string Tester::digit_filter(std::string string_input) {
 	return res;
 }
 
-void Tester::read_images() {
+void Tester::readImages() {
 	std::string pattern_jpg = test_images_path + "*";
 	cv::glob(pattern_jpg, image_files);
 
@@ -40,13 +40,13 @@ void Tester::read_images() {
 		}
 
 		images.push_back(image);
-		show_progerss_bar(i + 1, image_files.size());
+		showProgressBar(i + 1, image_files.size());
 	}
 }
 
-void Tester::get_isbn_answers() {
+void Tester::getISBNAnswers() {
 	for (auto imgf : image_files) {
-		isbn_answers.push_back(digit_filter(imgf.substr(imgf.rfind('\\') + 1)));
+		isbn_answers.push_back(digitFilter(imgf.substr(imgf.rfind('\\') + 1)));
 	}
 }
 
@@ -54,8 +54,8 @@ Tester::Tester(std::string test_images_path_input, std::string template_images_p
 	test_images_path = test_images_path_input;
 	template_images_path = template_images_path_input;
 
-	read_images();
-	get_isbn_answers();
+	readImages();
+	getISBNAnswers();
 
 	ISBN_test_total = images.size();
 	ISBN_test_accurate = 0;
@@ -68,32 +68,50 @@ Tester::Tester(std::string test_images_path_input, std::string template_images_p
 void Tester::test(bool save_preprocessed_images, std::string preprocessed_images_savepath = "preprocessed_images_save\\") {
 	
 	for (int i = 0; i < images.size(); i++) {
+		// 预处理
 		Preprocessor p(images[i]);
 		p.preprocess();
 		if (save_preprocessed_images) {
 			std::string fname = image_files[i].substr(image_files[i].rfind('\\')+1);
-			p.dbg_save(fname, test_images_path + preprocessed_images_savepath);
+			p.dbgSave(fname, test_images_path + preprocessed_images_savepath);
 		}
 
-		std::vector<cv::Mat> preprocessed_image_set = p.get_preprocess_result();
+		// 识别
+		std::vector<cv::Mat> preprocessed_image_set = p.getPreprocessResult();
 		Recognizer r(preprocessed_image_set, template_images_path);
 		RecognizeResult res = r.recognize();
-
-		isbn_recognize_results.push_back(digit_filter(res.res));
-
-		show_progerss_bar(i + 1, images.size());
+		// 保存识别结果
+		isbn_recognize_results.push_back(digitFilter(res.res));
+		// 显示总进度
+		showProgressBar(i + 1, images.size());
 	}
 }
 
-void Tester::calc_accuracy() {
+void Tester::saveCmpResToFile(std::string cur_isbn_answer, std::string cur_isbn_recognize_result, int i) {
+	std::fstream res_file;
+	res_file.open("img\\out.txt", std::ios::out | std::ios::app);
+
+	res_file << image_files[i] << ":\t";
+	if (cur_isbn_answer == cur_isbn_recognize_result) {
+		res_file << "ok";
+	}
+	else {
+		res_file << "err";
+	}
+	res_file
+		<< "\t[" << cur_isbn_answer << "]"
+		<< "\t[" << cur_isbn_recognize_result << "]"
+		<< std::endl;
+
+	char_total += cur_isbn_answer.length();
+}
+
+void Tester::calcAccuracy() {
 	int n = images.size();
 	for (int i = 0; i < n; i++) {
 		std::string cur_isbn_answer = isbn_answers[i];
 		std::string cur_isbn_recognize_result = isbn_recognize_results[i];
 
-		std::cout << cur_isbn_answer << " " << cur_isbn_recognize_result << std::endl;
-		char_total += cur_isbn_answer.length();
-		
 		if (cur_isbn_answer == cur_isbn_recognize_result) {
 			ISBN_test_accurate++;
 		}
@@ -105,11 +123,16 @@ void Tester::calc_accuracy() {
 			}
 			if (p >= cur_isbn_answer.length()) break;
 		}
+
+		// 逐行保存文件名、答案ISBN、识别ISBN和识别结果到文件
+		saveCmpResToFile(cur_isbn_answer, cur_isbn_recognize_result, i);
 	}
 
 	ISBN_accuracy = (double)ISBN_test_accurate / (double)ISBN_test_total;
 	char_accuracy = (double)char_accurate / (double)char_total;
-	std::cout << "\033[2J\033[H"
+	std::cout 
+		<< std::endl
+		<< "\033[2J\033[H"
 		<< std::fixed << std::setprecision(2)
 		<< "ISBN准确率：" << ISBN_accuracy * 100 << "%" << std::endl
 		<< "数字字符准确率：" << char_accuracy * 100 << "%" << std::endl << std::endl

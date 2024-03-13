@@ -45,6 +45,18 @@ bool cmpCharMatchResult(CharMatchResult a, CharMatchResult b){
 	return a.diff < b.diff;
 }
 
+// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
+bool Recognizer::charImgCheck(cv::Mat input_image) {
+	if (input_image.rows * input_image.cols < S_INPUT_CHAR_IMAGE_THRESHOLD) {
+		return false;
+	}
+	else if ((double)input_image.rows / input_image.cols < RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD) {
+		return false;
+	}
+
+	return true;
+}
+
 /**@brief 根据模板和输入图片的差值大小，匹配单个字符图片并返回识别出的字符
  * @param[in] input_image    源字符图片
  * @param[in] index_in_set   源字符图片在字符图片集中的索引
@@ -52,9 +64,8 @@ bool cmpCharMatchResult(CharMatchResult a, CharMatchResult b){
  */
 char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	
-	// 检查将匹配的图片大小是否大于阈值
-	int input_size = input_image.rows * input_image.cols;
-	if (input_size <= 630 && (double)input_image.rows / input_image.cols < 1) {
+	// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
+	if (!charImgCheck(input_image)) {
 		return ' ';
 	}
 	

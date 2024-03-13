@@ -10,8 +10,10 @@
 
 #pragma once
 
-#define N_TEMPLATE 4			///< 模板图片套数，依此参数和模板图片索引计算得到对应字符
-#define N_TEMPLATE_IMAGES 14	///< 每套模板字符图片数量，依此参数和模板图片索引计算得到对应字符
+#define N_TEMPLATE 4								///< 模板图片套数，依此参数和模板图片索引计算得到对应字符
+#define N_TEMPLATE_IMAGES 14						///< 每套模板字符图片数量，依此参数和模板图片索引计算得到对应字符
+#define S_INPUT_CHAR_IMAGE_THRESHOLD 900			///< 字符图片大小阈值，小于此阈值则拒绝识别返回空格字符
+#define RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD 1.2		///< 字符图片行列比值的阈值，小于此阈值则拒绝识别返回空格字符
 
 #include <opencv2\opencv.hpp>
 #include <utility>
@@ -33,7 +35,7 @@ struct CharMatchResult {
 
 /**@struct info
 * @brief RecognizeResult \n
-* 存储recognize最终识别结果，除了识别的字符串还附带了其他信息
+* 存储recognize最终识别结果，除了识别的字符串还可以附带其他信息
 */
 struct RecognizeResult {
 	std::string res;	///< recognize最终识别结果字符串
@@ -49,6 +51,7 @@ private:
 	std::string template_path;						///< 模板图片路径
 
 	double charMatch(cv::Mat, cv::Mat);				///< 单次尝试匹配模板和输入图片函数
+	bool charImgCheck(cv::Mat);
 	char charRecognizer(cv::Mat, int);				///< 匹配单个字符图片函数
 
 public:

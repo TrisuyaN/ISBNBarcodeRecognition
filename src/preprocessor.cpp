@@ -73,7 +73,7 @@ cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
  * @param[in] n 数组长度
  * @return 数组中值
  */
-int Preprocessor::sort_mid(int val[], int n){
+int Preprocessor::sortMid(int val[], int n){
 	sort(val, val + n - 1);
 	return val[n/2];
 }
@@ -97,7 +97,7 @@ cv::Mat Preprocessor::fitler(cv::Mat& input_image) {
 			for (int k = 0; k < 9; k++) {
 				neighbor[k] = input_image.at<uchar>(i + dx[k], j + dy[k]);
 			}
-			mid_val = sort_mid(neighbor, 9);
+			mid_val = sortMid(neighbor, 9);
 			res_image.at<uchar>(i, j) = mid_val;
 		}
 	}
@@ -120,7 +120,7 @@ cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::flood_fill(cv::Mat& input_image) {
+cv::Mat Preprocessor::floodFill(cv::Mat& input_image) {
 	cv::Mat res_image = input_image;
 	int dx[] = { -1,0,1,-1,1,-1,0,1 };
 	int dy[] = { 1,1,1,0,0,-1,-1,-1 };
@@ -159,7 +159,7 @@ cv::Mat Preprocessor::flood_fill(cv::Mat& input_image) {
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
+cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
 	
 	std::vector<int> rows_white_pixels;				// 存储行白色像素数
 	std::vector<cv::Point> histogram_points;		// 用于表示每一行的白像素值大于阈值（100）的数量
@@ -245,7 +245,7 @@ cv::Mat Preprocessor::get_ROI_y_image(cv::Mat& input_image) {
  * @param[in] input_image 源图片引用
  * @return 切割处理得到的字符图像集
  */
-std::vector<cv::Mat> Preprocessor::get_ROI_x(cv::Mat& input_image) {
+std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
 	// 类似get_ROI_y的方法继续对（输入的）结果区域逐列处理，获得ROI_range_x
 	std::vector<int> num_area;
 	std::vector<RangeStruct> num_ranges;
@@ -328,15 +328,15 @@ void Preprocessor::preprocess() {
 	fitlered_image = fitler(gray_image);
 	threshold_image = threshold(fitlered_image);
 	rectified_image = rectify(threshold_image);
-	flood_filled_image = flood_fill(rectified_image);
-	ROI_image_y = get_ROI_y_image(flood_filled_image);
-	processed_image_set = get_ROI_x(ROI_image_y);
+	flood_filled_image = floodFill(rectified_image);
+	ROI_image_y = getROIYImage(flood_filled_image);
+	processed_image_set = getROIX(ROI_image_y);
 }
 
 /**@brief 得到最终字符图像集
  * @return Preprocessor类处理得到的最终字符图像集
  */
-std::vector<cv::Mat> Preprocessor::get_preprocess_result() {
+std::vector<cv::Mat> Preprocessor::getPreprocessResult() {
 	return processed_image_set;
 }
 
@@ -344,7 +344,7 @@ std::vector<cv::Mat> Preprocessor::get_preprocess_result() {
  * @param[in] filename 文件名
  * @param[in] save_path 保存路径
  */
-void Preprocessor::dbg_save(string filename, string save_path) {
+void Preprocessor::dbgSave(string filename, string save_path) {
 	std::wstring save_path_wstr;
 	// 创建目录
 	save_path_wstr = std::wstring(save_path.begin(), save_path.end());

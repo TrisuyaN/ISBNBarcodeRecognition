@@ -44,5 +44,5 @@ int main() {
 #endif
 	Tester tester(test_images_path, template_images_path);
 	tester.test(SAVE_PREPROCESSED_IMAGES, preprocessed_images_save_path);
-	tester.calc_accuracy();
+	tester.calcAccuracy();
 }
