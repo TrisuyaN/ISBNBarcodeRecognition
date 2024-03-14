@@ -36,6 +36,8 @@ private:
 	int char_total;
 	int char_accurate;
 	double char_accuracy;
+	std::vector<int> templates_scores;				///< 模板总命中率，用于调试
+
 
 	std::string digitFilter(std::string);
 	void saveCmpResToFile(std::string, std::string, std::string, int);
@@ -48,4 +50,5 @@ public:
 	void calcAccuracy(std::string);
 	void saveArgs(std::string);
 	void saveResult(std::string);
+	void saveTemplateScores(std::string);
 };

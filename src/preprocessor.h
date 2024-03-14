@@ -55,6 +55,11 @@ struct RangeStructWithID {
 */
 class Preprocessor{
 private:
+	// 实用函数
+	bool charImgCheck(cv::Mat);						///< 检测字符图像是否合法
+	double imgPixelAverage(cv::Mat);				///< 获得图像像素的平均灰度值
+	double imgWhitePixelRatio(cv::Mat, int);		///< 根据阈值计算图像的偏白色像素占比
+
 	// 分步处理的结果
 	cv::Mat raw_image;								///< 原始图像
 	cv::Mat resized_image;							///< 裁剪并缩放后的图像
@@ -66,10 +71,9 @@ private:
 	cv::Mat ROI_image_y;							///< y方向感兴趣的图像
 	std::vector<cv::Mat> processed_image_set;		///< 处理得到的字符图像集
 
-	bool charImgCheck(cv::Mat);
-
 	// 分步的图像处理函数
-	int sortMid(int val[], int);					///< 获取数组的中值 
+	int sortMid(int val[], int);					///< 获取数组的中值
+	void solveBlackBackground(cv::Mat&);			///< 判断并对黑色背景图反色
 	cv::Mat extractUpperHalf(cv::Mat);              ///< 截取图片上部分，减少无用信息干扰
 	cv::Mat resize(cv::Mat, double);                ///< 得到等比例转换为指定宽度的图像
 	cv::Mat gray(cv::Mat&);                         ///< 获得灰度化图像

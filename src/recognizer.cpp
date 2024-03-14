@@ -24,12 +24,10 @@ double Recognizer::charMatch(cv::Mat input_image, cv::Mat template_image) {
 	//cv::matchTemplate(input_image, cur_template_image, demo_diff_image, cv::TM_SQDIFF_NORMED);    // 尝试OpenCV的模板匹配函数
 	
 	double nums = 0;
-	int temp = 0;
 	for (int i = 0; i < diff_image.rows; i++){
 		for (int j = 0; j < diff_image.cols; j++){
 			if (diff_image.ptr(i)[j] != 0){
 				nums += diff_image.ptr(i)[j];
-				temp++;
 			}
 		}
 	}
@@ -60,7 +58,7 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	int template_image_total = templates_file_name.size();
 
 	// 检查模板套数与宏参数N_TEMPLATE是否匹配，若不匹配会导致模板文件索引和字符无法对应
-	if (template_image_total / 14 != N_TEMPLATE) {
+	if (template_image_total != N_TEMPLATE * N_TEMPLATE_IMAGES) {
 		cerr << "模板文件数量与宏参数不匹配" << endl;
 		exit(-1);
 	}
@@ -135,6 +133,7 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 		}
 	}
 	index = match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES;
+	templates_scores[match_results[min_diff_template_index].template_index]++;	// 记录模板命中
 	
 	switch (index) {
 	case 0:
@@ -173,6 +172,7 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 Recognizer::Recognizer(std::vector<cv::Mat>& input_image_set, string input_template_path) {
 	image_set = input_image_set;
 	template_path = input_template_path;
+	templates_scores.resize(N_TEMPLATE_IMAGES * N_TEMPLATE, 0);
 }
 
 /**@brief 字符图像集识别函数
@@ -188,4 +188,8 @@ RecognizeResult Recognizer::recognize() {
 	return {
 		res
 	};
+}
+
+std::vector<int> Recognizer::getTemplatesScores() {
+	return templates_scores;
 }

@@ -12,6 +12,30 @@
 
 using namespace std;
 
+double Preprocessor::imgPixelAverage(cv::Mat input_image) {
+	double nums = 0;
+	for (int i = 0; i < input_image.rows; i++) {
+		for (int j = 0; j < input_image.cols; j++) {
+			if (input_image.ptr(i)[j] != 0) {
+				nums += input_image.ptr(i)[j];
+			}
+		}
+	}
+	return nums / (input_image.rows * input_image.cols);
+}
+
+double Preprocessor::imgWhitePixelRatio(cv::Mat input_image, int threshold) {
+	double num = 0;
+	for (int i = 0; i < input_image.rows; i++) {
+		for (int j = 0; j < input_image.cols; j++) {
+			if (input_image.ptr(i)[j] > threshold) {
+				num += 1;
+			}
+		}
+	}
+	return num / (input_image.rows * input_image.cols);
+}
+
 /**@brief 提取图像上半部分
  * @param[in] input_image 源图片
  * @return 处理后的图像
@@ -42,6 +66,15 @@ cv::Mat Preprocessor::resize(cv::Mat input_image, double width) {
 	double height = width * (double)input_image.rows / input_image.cols;
 	cv::resize(input_image, res_image, cv::Size(width, height));
 	return res_image;
+}
+
+void Preprocessor::solveBlackBackground(cv::Mat& input_image) {
+	std::cout << imgPixelAverage(input_image) << " " << imgWhitePixelRatio(input_image, 127) << std::endl;
+	if (imgPixelAverage(input_image) < BLACK_BG_THRESHOLD) {
+		cv::bitwise_not(input_image, input_image);
+		//cv::imshow("a", input_image);
+		//cv::waitKey(0);
+	}
 }
 
 /**@brief 获得灰度化图像
@@ -153,12 +186,16 @@ cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
 	cv::Mat res_image;
 
 	// 自适应阈值处理
-	// 第三个参数255是最大值，表示如果像素值大于（小于，取决于阈值类型）阈值，那么这个像素的值会被设置为这个最大值。
-	// 第四个参数cv::ADAPTIVE_THRESH_GAUSSIAN_C是自适应方法，表示阈值是每个像素的邻域值的加权和，权重是一个高斯窗口。
-	// 第五个参数cv::THRESH_BINARY_INV是阈值类型，表示如果像素值大于阈值，那么这个像素的值会被设置为0，否则被设置为最大值，这是二值化阈值的一种类型。
-	// 第六个参数159是邻域大小，表示用来计算阈值的邻域的大小，这个值必须是奇数。
-	// 第七个参数18是常数C，表示从计算得到的阈值中减去的常数，这可以用来调整阈值的大小。
-	cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY_INV, 159, 18);
+	cv::adaptiveThreshold(
+		input_image,
+		res_image,
+		255,								///< 最大值，表示如果像素值大于（小于，取决于阈值类型）阈值，那么这个像素的值会被设置为这个最大值
+		cv::ADAPTIVE_THRESH_GAUSSIAN_C,		///< 自适应方法，表示阈值是每个像素的邻域值的加权和，权重是一个高斯窗口
+		cv::THRESH_BINARY_INV,				///< 阈值类型，如果像素值大于阈值，那么值会被设置为0，否则被设置为最大值
+		159,								///< 计算阈值的邻域的大小
+		18									///< 从计算得到的阈值中减去的常数，调整阈值大小。
+	);
+
 	return res_image;
 }
 
@@ -248,8 +285,11 @@ cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
 		}
 	}
 	// 获取倒数第二个候选ROI的起始和终点（倒数第一个是条码，倒数第二个是数字，从而规避图片顶部边缘噪点）
-	int ROI_range_y_begin = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.start, 
-	ROI_range_y_end = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.end;
+	int ROI_range_y_begin = -1, ROI_range_y_end = -1;
+	if (!ROI_range_tmp.empty()) {
+		ROI_range_y_begin = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.start;
+		ROI_range_y_end = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.end;
+	}
 	
 	
 	// 若区域过小或过大（需要进一步切分），重新获取ROI
@@ -282,8 +322,10 @@ cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
 		}
 		
 		// 重新设置新的ROI
-		ROI_range_y_begin = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.start;
-		ROI_range_y_end = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.end;
+		if (!ROI_range_tmp.empty()) {
+			ROI_range_y_begin = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.start;
+			ROI_range_y_end = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.end;
+		}
 	}
 	// 如果没有提取到导致开始小于结尾，或者太大，直接返回空Mat
 	if (ROI_range_y_begin >= ROI_range_y_end || ROI_range_y_begin > 114514) return cv::Mat();
@@ -342,8 +384,10 @@ std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
 		}
 	}
 	
-	ROI_range_x.start = num_ranges[0].start;
-	ROI_range_x.end = num_ranges[num_ranges.size() - 1].end;
+	if (!num_ranges.empty()) {
+		ROI_range_x.start = num_ranges[0].start;
+		ROI_range_x.end = num_ranges[num_ranges.size() - 1].end;
+	}
 	
 	for (int i = 0; i < num_ranges.size(); i++) {
 		cv::Mat item_image = input_image(cv::Range::all(), cv::Range(num_ranges[i].start, num_ranges[i].end));
@@ -396,9 +440,11 @@ Preprocessor::Preprocessor(cv::Mat input_image) {
  * @details 依次进行提取上半部分、灰度化、滤波降噪、二值化、调整角度、水漫法去除白边、获取竖直方向ROI、对竖直方向ROI切割处理得到ISBN的字符图像集
  */
 void Preprocessor::preprocess() {
+	//solveBlackBackground(raw_image);
 	resized_image = extractUpperHalf(raw_image);
 	gray_image = gray(resized_image);
 	denoised_image = denoise(gray_image);
+
 	threshold_image = threshold(denoised_image);
 	rectified_image = rectify(threshold_image);
 	flood_filled_image = floodFill(rectified_image);
@@ -443,15 +489,24 @@ void Preprocessor::dbgSave(string filename, string save_path) {
 	}
 	
 	// 写入文件
-	imwrite(save_path + filename + "_01_resized.jpg", resized_image);
-	imwrite(save_path + filename + "_02_gray.jpg", gray_image);
-	imwrite(save_path + filename + "_03_denoised.jpg", denoised_image);
-	imwrite(save_path + filename + "_04_threshold.jpg", threshold_image);
-	imwrite(save_path + filename + "_05_rectified.jpg", rectified_image);
-	imwrite(save_path + filename + "_06_flood_filled.jpg", flood_filled_image);
-	imwrite(save_path + filename + "_07_ROI_y.jpg", ROI_image_y);
-	for (int i = 0; i < processed_image_set.size(); i++) {
-		imwrite(save_path + filename + "_08_spilted_" + to_string(i) + ".jpg", processed_image_set[i]);
+	if(!resized_image.empty()) 
+		imwrite(save_path + filename + "_01_resized.jpg", resized_image);
+	if (!gray_image.empty()) 
+		imwrite(save_path + filename + "_02_gray.jpg", gray_image);
+	if (!denoised_image.empty()) 
+		imwrite(save_path + filename + "_03_denoised.jpg", denoised_image);
+	if (!threshold_image.empty()) 
+		imwrite(save_path + filename + "_04_threshold.jpg", threshold_image);
+	if (!rectified_image.empty()) 
+		imwrite(save_path + filename + "_05_rectified.jpg", rectified_image);
+	if (!flood_filled_image.empty()) 
+		imwrite(save_path + filename + "_06_flood_filled.jpg", flood_filled_image);
+	if (!ROI_image_y.empty()) 
+		imwrite(save_path + filename + "_07_ROI_y.jpg", ROI_image_y);
+	if (!processed_image_set.empty()) {
+		for (int i = 0; i < processed_image_set.size(); i++) {
+			if (!processed_image_set[i].empty()) imwrite(save_path + filename + "_08_spilted_" + to_string(i) + ".jpg", processed_image_set[i]);
+		}
 	}
 
 	std::cout << "成功保存分步预处理图像到" + save_path << endl;

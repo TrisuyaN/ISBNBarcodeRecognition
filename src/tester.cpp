@@ -65,6 +65,7 @@ void Tester::getISBNAnswers() {
 Tester::Tester(std::string test_images_path_input, std::string template_images_path_input) {
 	test_images_path = test_images_path_input;
 	template_images_path = template_images_path_input;
+	templates_scores.resize(N_TEMPLATE_IMAGES * N_TEMPLATE, 0);
 
 	readImages();
 	getISBNAnswers();
@@ -96,8 +97,12 @@ void Tester::test(bool save_preprocessed_images, std::string preprocessed_images
 		std::vector<cv::Mat> preprocessed_image_set = p.getPreprocessResult();
 		Recognizer r(preprocessed_image_set, template_images_path);
 		RecognizeResult res = r.recognize();
-		// 保存识别结果
+		// 保存识别结果和模板命中数
 		isbn_recognize_results.push_back(digitFilter(res.res));
+		std::vector<int> partial_ts = r.getTemplatesScores();
+		for (int i = 0; i < N_TEMPLATE_IMAGES * N_TEMPLATE; i++) {
+			templates_scores[i] += partial_ts[i];
+		}
 		// 显示总进度
 		showProgressBar(i + 1, images.size());
 	}
@@ -112,7 +117,7 @@ void Tester::saveArgs(std::string save_path) {
 
 	res_file
 		<< "=========================================================" << std::endl
-		<< "args: " << std::endl
+		<< "Arguments: " << std::endl
 		<< "=========================================================" << std::endl
 		<< "UPPER_EXTRACT_RATIO: " << UPPER_EXTRACT_RATIO << std::endl << std::endl
 		<< "FLOOD_FILL_DEPTH: " << FLOOD_FILL_DEPTH << std::endl << std::endl
@@ -214,13 +219,28 @@ void Tester::calcAccuracy(std::string save_path) {
 	// 计算准确率并输出
 	ISBN_accuracy = (double)ISBN_test_accurate / (double)ISBN_test_total;
 	char_accuracy = (double)char_accurate / (double)char_total;
-	std::cout 
+	std::cout
 		<< std::endl
 		<< "\033[2J\033[H"
 		<< std::fixed << std::setprecision(2)
 		<< "ISBN准确率：" << ISBN_accuracy * 100 << "%" << std::endl
-		<< "数字字符准确率：" << char_accuracy * 100 << "%" << std::endl << std::endl
-		<< "按任意键结束...";
+		<< "数字字符准确率：" << char_accuracy * 100 << "%" << std::endl << std::endl;
 	saveResult(save_path);
-	getchar();
+}
+
+void Tester::saveTemplateScores(std::string save_path) {
+	std::fstream res_file;
+	res_file.open(save_path, std::ios::out | std::ios::app);
+	res_file
+		<< "=========================================================" << std::endl
+		<< "TemplateScores: " << std::endl
+		<< "=========================================================" << std::endl;
+
+	for (int i = 0; i < templates_scores.size(); i++) {
+		res_file
+			<< "template_" << i << ": " << templates_scores[i] << std::endl;
+	}
+
+	res_file
+		<< "=========================================================" << std::endl << std::endl;
 }

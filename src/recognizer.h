@@ -46,7 +46,8 @@ class Recognizer {
 private:
 	std::vector<cv::Mat> image_set;					///< 待识别的图片集合
 	std::string template_path;						///< 模板图片路径
-	bool hasN = false;
+	bool hasN = false;								///< 当前字符串是否已识别到N
+	std::vector<int> templates_scores;				///< 模板命中率，用于调试
 
 	double charMatch(cv::Mat, cv::Mat);				///< 单次尝试匹配模板和输入图片函数
 	bool charImgCheck(cv::Mat);
@@ -55,4 +56,5 @@ private:
 public:
 	Recognizer(std::vector<cv::Mat>&, std::string);	
 	RecognizeResult recognize();					///< 字符图像集识别函数
+	std::vector<int> getTemplatesScores();			///< 获取模板命中次数
 };

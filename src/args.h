@@ -10,6 +10,9 @@
 #define OPENCV_GLOB_TEST			///< 测试2：读取 .\img\glod\*.jpg 并转换为 cv::Mat，最后依次打开
 #endif
 
+/// 判定黑底色图像的像素平均灰度值阈值
+#define BLACK_BG_THRESHOLD				100
+
 
 /// 图像预处理截取的上部分高度比例
 #define UPPER_EXTRACT_RATIO				0.45
