@@ -46,6 +46,7 @@ class Recognizer {
 private:
 	std::vector<cv::Mat> image_set;					///< 待识别的图片集合
 	std::string template_path;						///< 模板图片路径
+	bool hasN = false;
 
 	double charMatch(cv::Mat, cv::Mat);				///< 单次尝试匹配模板和输入图片函数
 	bool charImgCheck(cv::Mat);

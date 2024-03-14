@@ -95,16 +95,19 @@ void Tester::saveArgs(std::string save_path) {
 		<< "=========================================================" << std::endl
 		<< "args: " << std::endl
 		<< "=========================================================" << std::endl
+		<< "UPPER_EXTRACT_RATIO: " << UPPER_EXTRACT_RATIO << std::endl << std::endl
+		<< "FLOOD_FILL_DEPTH: " << FLOOD_FILL_DEPTH << std::endl << std::endl
 		<< "ROI_Y_VALID_P_THRESHOLD: " << ROI_Y_VALID_P_THRESHOLD << std::endl
 		<< "ROI_Y_VALID_NWP_THRESHOLD: " << ROI_Y_VALID_NWP_THRESHOLD << std::endl
 		<< "ROI_Y_RANGE_MIN_THERSHOLD: " << ROI_Y_RANGE_MIN_THERSHOLD << std::endl
 		<< "ROI_Y_RANGE_MAX_THERSHOLD: " << ROI_Y_RANGE_MAX_THERSHOLD << std::endl
 		<< "ROI_Y_CONTIUOUS_NWPD_THRESHOLD: " << ROI_Y_CONTIUOUS_NWPD_THRESHOLD << std::endl
-		<< "ROI_X_VALID_P_THRESHOLD: " << ROI_X_VALID_P_THRESHOLD << std::endl
+		<< "ROI_X_VALID_P_THRESHOLD: " << ROI_X_VALID_P_THRESHOLD << std::endl << std::endl
 		<< "N_TEMPLATE: " << N_TEMPLATE << std::endl
-		<< "N_TEMPLATE_IMAGES: " << N_TEMPLATE_IMAGES << std::endl
+		<< "N_TEMPLATE_IMAGES: " << N_TEMPLATE_IMAGES << std::endl << std::endl
 		<< "S_INPUT_CHAR_IMAGE_THRESHOLD: " << S_INPUT_CHAR_IMAGE_THRESHOLD << std::endl
 		<< "RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD: " << RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD << std::endl
+		<< "MAX_DIFF_THRESHOLD: " << MAX_DIFF_THRESHOLD << std::endl
 		<< "BUFF: " << BUFF << std::endl
 		<< "DEBUFF: " << DEBUFF << std::endl
 		<< "=========================================================" << std::endl << std::endl;

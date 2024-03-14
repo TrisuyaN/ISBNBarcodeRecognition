@@ -126,10 +126,14 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	sort(match_results.begin(), match_results.end(), cmpCharMatchResult);
 	int min_diff_template_index = 0;
 
+	if (match_results[0].diff > MAX_DIFF_THRESHOLD) {
+		return ' ';
+	}
+
 	// 根据字符图片在集合中的索引分成数字和字母，从而淘汰匹配率高但类型不符的模板，**但很大程度上依赖字符集切割是否标准，是否有多余**
 	for (int i = 0; i < template_image_total; ++i) {
 		// 字符图片索引小于4，说明是ISBN字母，那么当对应模板是数字的时候应该放弃这个匹配（即使更符合），继续寻找，直到其符合对应模板为字母（ISBN四个字母之一）
-		if (index_in_set < 4) {
+		if (index_in_set < 4 && !hasN) {
 			while (min_diff_template_index < match_results.size() &&
 				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES < 10 || 
 				match_results[min_diff_template_index].template_index % N_TEMPLATE_IMAGES == 14 ) {
@@ -166,6 +170,7 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	case 12:
 		return 'B';
 	case 13:
+		hasN = true;
 		return 'N';
 	case 14:
 		return 'X';

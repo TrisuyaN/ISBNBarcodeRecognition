@@ -21,7 +21,7 @@ cv::Mat Preprocessor::extractUpperHalf(cv::Mat input_image) {
 
 	int height = input_image.rows;
 	int width = input_image.cols;
-	cv::Rect upperHalfRegion(0, 0, width, height * 0.45);
+	cv::Rect upperHalfRegion(0, 0, width, height * UPPER_EXTRACT_RATIO);
 	cv::Mat uhm = input_image(upperHalfRegion);
 
 	return resize(uhm, 1200);
@@ -148,17 +148,18 @@ cv::Mat Preprocessor::floodFill(cv::Mat& input_image) {
 	int dy[] = { 1,1,1,0,0,-1,-1,-1 };
 	queue<Coordinate> q;
 	for (int i = 0; i < res_image.cols; i++)
-		for (int j = 0; j < 1; j++)
+		for (int j = 0; j < FLOOD_FILL_DEPTH; j++)
 			if (res_image.at<uchar>(j, i) != 0) q.push({ j,i });
 	for (int i = 0; i < res_image.cols; i++)
-		for (int j = res_image.rows - 1; j >= res_image.rows - 1; j--)
+		for (int j = res_image.rows - 1; j >= res_image.rows - FLOOD_FILL_DEPTH; j--)
 			if (res_image.at<uchar>(j, i) != 0) q.push({ j,i });
 	for (int i = 0; i < res_image.rows; i++)
-		for (int j = 0; j < 1; j++)
+		for (int j = 0; j < FLOOD_FILL_DEPTH; j++)
 			if (res_image.at<uchar>(i, j) != 0) q.push({ i,j });
 	for (int i = 0; i < res_image.rows; i++)
-		for (int j = res_image.cols - 1; j >= res_image.cols - 1; j--)
+		for (int j = res_image.cols - 1; j >= res_image.cols - FLOOD_FILL_DEPTH; j--)
 			if (res_image.at<uchar>(i, j) != 0) q.push({ i,j });
+
 	
 	while (!q.empty()) {
 		Coordinate cur_pixel_coordinate = q.front(); q.pop();
