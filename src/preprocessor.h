@@ -56,34 +56,34 @@ struct RangeStructWithID {
 class Preprocessor{
 private:
 	// 分步处理的结果
-	cv::Mat raw_image;
-	cv::Mat resized_image;
-	cv::Mat gray_image;
-	cv::Mat denoised_image;
-	cv::Mat threshold_image;
-	cv::Mat rectified_image;
-	cv::Mat flood_filled_image;
-	cv::Mat ROI_image_y;
-	std::vector<cv::Mat> processed_image_set;
+	cv::Mat raw_image;								///< 原始图像
+	cv::Mat resized_image;							///< 裁剪并缩放后的图像
+	cv::Mat gray_image;								///< 转换为灰度图像
+	cv::Mat denoised_image;							///< 膨胀腐蚀后的降噪图像
+	cv::Mat threshold_image;						///< 二值化图像
+	cv::Mat rectified_image;						///< 旋转校正图像
+	cv::Mat flood_filled_image;						///< 水浸去除掉边框的图像
+	cv::Mat ROI_image_y;							///< y方向感兴趣的图像
+	std::vector<cv::Mat> processed_image_set;		///< 处理得到的字符图像集
 
 	bool charImgCheck(cv::Mat);
 
 	// 分步的图像处理函数
 	int sortMid(int val[], int);					///< 获取数组的中值 
-	cv::Mat extractUpperHalf(cv::Mat);				///< 截取图片上部分，减少无用信息干扰
-	cv::Mat resize(cv::Mat, double);				///< 得到等比例转换为指定宽度的图像
-	cv::Mat gray(cv::Mat&);							///< 获得灰度化图像
-	cv::Mat denoise(cv::Mat&);						///< 获得滤波降噪的图像
-	cv::Mat threshold(cv::Mat&);					///< 获得二值化图像
-	cv::Mat rectify(cv::Mat&);						///< 获得调整角度后的竖直图像
-	cv::Mat floodFill(cv::Mat&);					///< 获得水漫法去除白边的图像
-	cv::Mat getROIYImage(cv::Mat&);					///< 得到竖直方向的ROI区域图像
-	std::vector<cv::Mat> getROIX(cv::Mat&);			///< 对竖直方向ROI切割处理得到ISBN的字符图像集
+	cv::Mat extractUpperHalf(cv::Mat);              ///< 截取图片上部分，减少无用信息干扰
+	cv::Mat resize(cv::Mat, double);                ///< 得到等比例转换为指定宽度的图像
+	cv::Mat gray(cv::Mat&);                         ///< 获得灰度化图像
+	cv::Mat denoise(cv::Mat&);                      ///< 获得滤波降噪的图像
+	cv::Mat threshold(cv::Mat&);                    ///< 获得二值化图像
+	cv::Mat rectify(cv::Mat&);                      ///< 获得调整角度后的竖直图像
+	cv::Mat floodFill(cv::Mat&);                    ///< 获得水漫法去除白边的图像
+	cv::Mat getROIYImage(cv::Mat&);                 ///< 得到竖直方向的ROI区域图像
+	std::vector<cv::Mat> getROIX(cv::Mat&);         ///< 对竖直方向ROI切割处理得到ISBN的字符图像集
 
 public:
 	// 供外部使用的接口
-	Preprocessor(cv::Mat);							///< 构造函数，接受一个输入图像
-	void preprocess();								///< 执行处理流程
-	void dbgSave(std::string, std::string);						///< 保存所有处理后的文件
-	std::vector<cv::Mat> getPreprocessResult();	///< 获取处理结果
+	Preprocessor(cv::Mat);                          ///< 构造函数，接受一个输入图像
+	void preprocess();                              ///< 执行处理流程
+	void dbgSave(std::string, std::string);         ///< 保存所有处理后的文件
+	std::vector<cv::Mat> getPreprocessResult();		///< 获取处理结果
 };

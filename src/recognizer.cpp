@@ -45,29 +45,12 @@ bool cmpCharMatchResult(CharMatchResult a, CharMatchResult b){
 	return a.diff < b.diff;
 }
 
-//// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
-//bool Recognizer::charImgCheck(cv::Mat input_image) {
-//	if (input_image.rows * input_image.cols < S_INPUT_CHAR_IMAGE_THRESHOLD) {
-//		return false;
-//	}
-//	else if ((double)input_image.rows / input_image.cols < RC_RATIO_INPUT_CHAR_IMAGE_THRESHOLD) {
-//		return false;
-//	}
-//
-//	return true;
-//}
-
 /**@brief 根据模板和输入图片的差值大小，匹配单个字符图片并返回识别出的字符
  * @param[in] input_image    源字符图片
  * @param[in] index_in_set   源字符图片在字符图片集中的索引
  * @return 识别出的字符
  */
 char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
-	
-	//// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
-	//if (!charImgCheck(input_image)) {
-	//	return ' ';
-	//}
 	
 	// 读取模板
 	string pattern = template_path + "*";
@@ -93,6 +76,7 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	match_results.resize(template_image_total);
 
 	int index = 0;
+
 
 	for (int template_index = 0; template_index < template_image_total; template_index++) {
 		cv::Mat cur_template_image = cv::imread(templates_file_name[template_index], 0);
@@ -126,6 +110,7 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 	sort(match_results.begin(), match_results.end(), cmpCharMatchResult);
 	int min_diff_template_index = 0;
 
+	// 差值大于阈值则返回空字符
 	if (match_results[0].diff > MAX_DIFF_THRESHOLD) {
 		return ' ';
 	}

@@ -12,6 +12,10 @@
 
 using namespace std;
 
+/**@brief 提取图像上半部分
+ * @param[in] input_image 源图片
+ * @return 处理后的图像
+ */
 cv::Mat Preprocessor::extractUpperHalf(cv::Mat input_image) {
 	// 检查输入图像是否为空
 	if (input_image.empty()) {
@@ -28,7 +32,7 @@ cv::Mat Preprocessor::extractUpperHalf(cv::Mat input_image) {
 }
 
 /**@brief 得到等比例转换为指定宽度的图像
- * @param[in] input_image 源图片引用
+ * @param[in] input_image 源图片
  * @param[in] width 指定宽度
  * @return 处理后的图像
  */
@@ -57,25 +61,36 @@ cv::Mat Preprocessor::gray(cv::Mat& input_image) {
 cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
 	cv::Mat res_image;
 	cv::Mat pic_edge;
+
+	// 使用Sobel算子对输入图像进行边缘检测，结果存储在pic_edge中
 	cv::Sobel(input_image, pic_edge, -1, 0, 1, 5);
 	
+	// 使用霍夫变换（Hough Transform）在边缘检测后的图像中检测所有直线
 	vector<cv::Vec2f> Line;
 	HoughLines(pic_edge, Line, 1, CV_PI / 180, 180, 0, 0);
 	
 	double Angle = 0;
 	int LineCnt = 0;
-	
+
+	// 遍历Line中检测到的所有直线，计算它们的角度，并将这些角度累加
+	// 这里的角度是以弧度为单位的，如果直线的角度小于1.2或大于1.8（大约在68.2度和103.1度之间），则忽略这条直线
 	for (int i = 0; i < Line.size(); i++) {
 		if (Line[i][1] < 1.2 || Line[i][1] > 1.8) continue;
 		Angle += Line[i][1];
 		LineCnt++;
 	}
+
+	// 计算所有直线角度的平均值，并将其转换为度
+	// 如果没有检测到任何直线，那么角度被设置为90度（即CV_PI / 2）
 	if (LineCnt == 0) Angle = CV_PI / 2;
 	else Angle /= LineCnt;
 	Angle = 180 * Angle / CV_PI - 90;
+
+	// 使用Angle和图像的中心点创建一个旋转矩阵
 	cv::Mat pic_tmp = cv::getRotationMatrix2D(cv::Point(input_image.cols / 2, input_image.rows / 2), Angle, 1);
 	cv::Size src_size = cv::Size(input_image.cols * 1.42, input_image.rows);
 	
+	// 使用cv::warpAffine函数和旋转矩阵对图像进行旋转
 	cv::warpAffine(input_image, res_image, pic_tmp, src_size);
 	//cv::warpAffine(this->src_copy_image, this->src_copy_image, pic_tmp, src_size);	// 绘制直线到复制的原始图片
 	
@@ -99,15 +114,20 @@ int Preprocessor::sortMid(int val[], int n){
  * @return 处理后的图像
  */
 cv::Mat Preprocessor::denoise(cv::Mat& input_image) {
+	// 获得结构元素滑动窗口用于膨胀腐蚀
 	cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+	// 膨胀操作 增强图像中的白色区域（前景）。使二值图像白色区域变得更加大，黑色区域变得更小
 	cv::dilate(input_image, input_image, element);
+	// 腐蚀操作 使白色区域变得更小，黑色区域变得更大
 	cv::erode(input_image, input_image, element);
 
+	// 转换到8位无符号单通道图像
 	cv::Mat res_image = cv::Mat(input_image.rows, input_image.cols, CV_8UC1);
 	int dx[] = { 0,-1,0,1,-1,1,-1,0,1 };
 	int dy[] = { 0,1,1,1,0,0,-1,-1,-1 };
 	int neighbor[9], mid_val;
 	
+	// 中值滤波 去除图像中的椒盐噪声
 	for (int i = 0; i < input_image.rows; i++) {
 		for (int j = 0; j < input_image.cols; j++){
 			if (i == 0 || j == 0 || i == input_image.rows - 1 || j == input_image.cols - 1){
@@ -131,9 +151,13 @@ cv::Mat Preprocessor::denoise(cv::Mat& input_image) {
  */
 cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
 	cv::Mat res_image;
-	//cv::threshold(input_image, res_image, 0, 255, 1 | cv::THRESH_OTSU);
-	//cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_MEAN_C, 1, 159, 18);
-	//cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, 1, 159, 18);
+
+	// 自适应阈值处理
+	// 第三个参数255是最大值，表示如果像素值大于（小于，取决于阈值类型）阈值，那么这个像素的值会被设置为这个最大值。
+	// 第四个参数cv::ADAPTIVE_THRESH_GAUSSIAN_C是自适应方法，表示阈值是每个像素的邻域值的加权和，权重是一个高斯窗口。
+	// 第五个参数cv::THRESH_BINARY_INV是阈值类型，表示如果像素值大于阈值，那么这个像素的值会被设置为0，否则被设置为最大值，这是二值化阈值的一种类型。
+	// 第六个参数159是邻域大小，表示用来计算阈值的邻域的大小，这个值必须是奇数。
+	// 第七个参数18是常数C，表示从计算得到的阈值中减去的常数，这可以用来调整阈值的大小。
 	cv::adaptiveThreshold(input_image, res_image, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY_INV, 159, 18);
 	return res_image;
 }
@@ -146,6 +170,8 @@ cv::Mat Preprocessor::floodFill(cv::Mat& input_image) {
 	cv::Mat res_image = input_image;
 	int dx[] = { -1,0,1,-1,1,-1,0,1 };
 	int dy[] = { 1,1,1,0,0,-1,-1,-1 };
+
+	// 将图像边缘的非零像素的坐标加入到队列中
 	queue<Coordinate> q;
 	for (int i = 0; i < res_image.cols; i++)
 		for (int j = 0; j < FLOOD_FILL_DEPTH; j++)
@@ -160,7 +186,7 @@ cv::Mat Preprocessor::floodFill(cv::Mat& input_image) {
 		for (int j = res_image.cols - 1; j >= res_image.cols - FLOOD_FILL_DEPTH; j--)
 			if (res_image.at<uchar>(i, j) != 0) q.push({ i,j });
 
-	
+	// 遍历队列中像素8个邻居
 	while (!q.empty()) {
 		Coordinate cur_pixel_coordinate = q.front(); q.pop();
 		int cur_pixel_x = cur_pixel_coordinate.x, cur_pixel_y = cur_pixel_coordinate.y;
@@ -175,6 +201,7 @@ cv::Mat Preprocessor::floodFill(cv::Mat& input_image) {
 			}
 		}
 	}
+
 	return res_image;
 }
 
@@ -190,21 +217,24 @@ cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
 	
 	// 从上到下遍历输入图片的行
 	for (int i = 0; i < input_image.rows; i++) {
-		int while_pixel_sum = 0;									// sum 计数每行符合条件（？）的像素点个数
+		int while_pixel_sum = 0;					// sum 计数每行符合条件（？）的像素点个数
 		uchar* cur_row_ptr = input_image.ptr(i);
+
 		// 遍历当前行像素点
 		for (int j = 0; j < input_image.cols; j++) {
-			if (*(cur_row_ptr + j) >= ROI_Y_VALID_P_THRESHOLD) while_pixel_sum++;		// 计数偏白色的像素点（取ROI_Y_VALID_P_THRESHOLD为阈值，已二值化后的图像，即为计数白像素点）
+			if (*(cur_row_ptr + j) >= ROI_Y_VALID_P_THRESHOLD) while_pixel_sum++;					// 计数偏白色的像素点（取ROI_Y_VALID_P_THRESHOLD为阈值，已二值化后的图像，即为计数白像素点）
 		}
-		rows_white_pixels.push_back(while_pixel_sum);				// 保存计数
-		histogram_points.push_back(cv::Point(while_pixel_sum, i));	// 保存？中点？points也许反映的不是输入图片上的点而是“直方图”，而sum除以2是为了缩减直方图长度
-		//if (i) cv::line(input_image, points[max(0, i - 1)], points[i], cv::Scalar(255, 0, 0), 2); // 画分割线？没有用 哦原来是在原始图片上画直方图
+
+		rows_white_pixels.push_back(while_pixel_sum);												// 保存计数
+		histogram_points.push_back(cv::Point(while_pixel_sum, i));									// 保存？中点？points也许反映的不是输入图片上的点而是“直方图”，而sum除以2是为了缩减直方图长度
+		
+		//if (i) cv::line(input_image, points[max(0, i - 1)], points[i], cv::Scalar(255, 0, 0), 2); // 绘制直方图到原图
 	}
 	
 	int idx = -1;
 	// 遍历原始图片行白像素数值
-	for (int i = 0; i < rows_white_pixels.size() / 2; i++) {		// 貌似只看了一半，为什么？
-		// 取白色像素数量ROI_Y_VALID_NWP_THRESHOLD为阈值（魔法数字差评）
+	for (int i = 0; i < rows_white_pixels.size() / 2; i++) {		// 只读取半数，减少计算量和干扰
+		// 取白色像素数量ROI_Y_VALID_NWP_THRESHOLD为阈值
 		if (rows_white_pixels[i] >= ROI_Y_VALID_NWP_THRESHOLD) {
 			RangeStructWithID item = { ++idx, {i, 0} };				// 设置区域id，始点，终点暂记为0
 			ROI_range_tmp.push_back(item);
@@ -217,17 +247,17 @@ cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
 			i = ++idx;												// 同步循环的索引（受到while的影响）
 		}
 	}
-	// 取？？？为ROIy区域？
+	// 获取倒数第二个候选ROI的起始和终点（倒数第一个是条码，倒数第二个是数字，从而规避图片顶部边缘噪点）
 	int ROI_range_y_begin = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.start, 
 	ROI_range_y_end = ROI_range_tmp[max(0, (int)ROI_range_tmp.size() - 2)].range.end;
 	
 	
 	// 若区域过小或过大（需要进一步切分），重新获取ROI
-	priority_queue<double> heap;	// 最大堆，维护最大的行白像素值
 	if (ROI_range_y_end - ROI_range_y_begin >= ROI_Y_RANGE_MAX_THERSHOLD || ROI_range_y_end - ROI_range_y_begin <= ROI_Y_RANGE_MIN_THERSHOLD) {
 		ROI_range_tmp.clear();		// 清除ROI区域缓存
 		
 		idx = -1;
+		priority_queue<double> heap;	// 最大堆，维护最大的行白像素值
 		for (int i = 0; i < rows_white_pixels.size() / 2; i++) {
 			// 若行白色像素超过阈值，且和目前存在的最大的行白像素值的差小于阈值（保证区域内行白像素数接近）
 			if (rows_white_pixels[i] >= ROI_Y_VALID_P_THRESHOLD && (!heap.size() || heap.top() - rows_white_pixels[i] <= ROI_Y_CONTIUOUS_NWPD_THRESHOLD)) {
@@ -259,13 +289,16 @@ cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
 	if (ROI_range_y_begin >= ROI_range_y_end || ROI_range_y_begin > 114514) return cv::Mat();
 	
 	cv::Range ROI_range_y = cv::Range(ROI_range_y_begin, ROI_range_y_end);
-	cv::Mat ROI_image_y = input_image(cv::Range(ROI_range_y_begin, ROI_range_y_end), cv::Range::all());
+	cv::Mat ROI_image_y = input_image(ROI_range_y, cv::Range::all());
 	
 	return ROI_image_y;
 }
 
 
-// 检查将匹配的图片大小是否大于阈值 或 图片长宽比是否合适
+/**@brief 检查字符图像是否符合要求
+ * @param[in] input_image 源图片
+ * @return 是否符合要求
+ */
 bool Preprocessor::charImgCheck(cv::Mat input_image) {
 	if (input_image.rows * input_image.cols < S_INPUT_CHAR_IMAGE_THRESHOLD) {
 		return false;
@@ -277,18 +310,17 @@ bool Preprocessor::charImgCheck(cv::Mat input_image) {
 	return true;
 }
 
-/**@brief 对竖直方向ROI切割处理得到ISBN的字符图像集
+/**@brief 对竖直方向ROI切割处理得到ISBN的字符图像集，类似get_ROI_y的方法继续对（输入的）结果区域逐列处理，获得ROI_range_x
  * @param[in] input_image 源图片引用
  * @return 切割处理得到的字符图像集
  */
 std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
-	// 类似get_ROI_y的方法继续对（输入的）结果区域逐列处理，获得ROI_range_x
 	std::vector<int> num_area;
 	std::vector<RangeStruct> num_ranges;
 	std::vector<cv::Mat> result_image_set;
 	cv::Range ROI_range_x;
 	
-	// 从左到右遍历输入图片的列
+	// 从左到右遍历输入图片的列，计算每一列的有效像素数量
 	for (int i = 0; i < input_image.cols; i++) {
 		int num = 0;
 		for (int j = 0; j < input_image.rows; j++) {
@@ -298,6 +330,7 @@ std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
 		num_area.push_back(num);
 	}
 	
+	// 找出有效列的连续区域
 	for (int i = 0; i < num_area.size(); i++) {
 		if (num_area[i] >= 2) {
 			RangeStruct item = { max(i - 1, 0), 0 };
@@ -311,8 +344,6 @@ std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
 	
 	ROI_range_x.start = num_ranges[0].start;
 	ROI_range_x.end = num_ranges[num_ranges.size() - 1].end;
-	
-	//cv::Mat ROI_image_x = input_image(ROI_range_x, cv::Range::all());
 	
 	for (int i = 0; i < num_ranges.size(); i++) {
 		cv::Mat item_image = input_image(cv::Range::all(), cv::Range(num_ranges[i].start, num_ranges[i].end));
@@ -341,8 +372,9 @@ std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
 				break;
 			}
 		}
-		item_image = item_image(cv::Range(head, end), cv::Range::all());
 
+		// 截取并验证字符图片有效性
+		item_image = item_image(cv::Range(head, end), cv::Range::all());
 		if (charImgCheck(item_image)) {
 			result_image_set.push_back(item_image);
 		}
@@ -360,7 +392,8 @@ Preprocessor::Preprocessor(cv::Mat input_image) {
 	raw_image = input_image;
 }
 
-/**@brief 执行处理流程的函数
+/**@brief 图像预处理
+ * @details 依次进行提取上半部分、灰度化、滤波降噪、二值化、调整角度、水漫法去除白边、获取竖直方向ROI、对竖直方向ROI切割处理得到ISBN的字符图像集
  */
 void Preprocessor::preprocess() {
 	resized_image = extractUpperHalf(raw_image);

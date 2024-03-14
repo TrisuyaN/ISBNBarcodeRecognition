@@ -10,6 +10,10 @@
 #include "tester.h"
 #include "myutility.h"
 
+/**@brief 从字符串中提取数字和X
+ * @param[in] string_input 输入字符串
+ * @return 提取后的字符串
+ */
 std::string Tester::digitFilter(std::string string_input) {
 	std::string res = "";
 	for (auto c : string_input) {
@@ -20,6 +24,8 @@ std::string Tester::digitFilter(std::string string_input) {
 	return res;
 }
 
+/**@brief 读取测试图片
+ */
 void Tester::readImages() {
 	std::string pattern_jpg = test_images_path + "*";
 	cv::glob(pattern_jpg, image_files);
@@ -44,12 +50,18 @@ void Tester::readImages() {
 	}
 }
 
+/**@brief 从文件名中提取ISBN答案
+ */
 void Tester::getISBNAnswers() {
 	for (auto imgf : image_files) {
 		isbn_answers.push_back(digitFilter(imgf.substr(imgf.rfind('\\') + 1)));
 	}
 }
 
+/**@brief 批量测试类构造函数
+ * @param[in] save_preprocessed_images 是否保存预处理后的图片
+ * @param[in] preprocessed_images_savepath 保存路径
+ */
 Tester::Tester(std::string test_images_path_input, std::string template_images_path_input) {
 	test_images_path = test_images_path_input;
 	template_images_path = template_images_path_input;
@@ -65,6 +77,10 @@ Tester::Tester(std::string test_images_path_input, std::string template_images_p
 	char_accuracy = 0;
 }
 
+/**@brief 批量测试函数
+ * @param[in] save_preprocessed_images 是否保存预处理后的图片
+ * @param[in] preprocessed_images_savepath 保存路径
+ */
 void Tester::test(bool save_preprocessed_images, std::string preprocessed_images_savepath = "preprocessed_images_save\\") {
 	
 	for (int i = 0; i < images.size(); i++) {
@@ -87,6 +103,9 @@ void Tester::test(bool save_preprocessed_images, std::string preprocessed_images
 	}
 }
 
+/**@brief 保存参数到文件
+ * @param[in] save_path 保存路径
+ */
 void Tester::saveArgs(std::string save_path) {
 	std::fstream res_file;
 	res_file.open(save_path, std::ios::out | std::ios::app);
@@ -113,6 +132,12 @@ void Tester::saveArgs(std::string save_path) {
 		<< "=========================================================" << std::endl << std::endl;
 }
 
+/**@brief 保存比较结果到文件
+ * @param[in] save_path 保存路径
+ * @param[in] cur_isbn_answer 当前ISBN答案
+ * @param[in] cur_isbn_recognize_result 当前识别结果
+ * @param[in] i 当前图片索引
+ */
 void Tester::saveCmpResToFile(std::string save_path, std::string cur_isbn_answer, std::string cur_isbn_recognize_result, int i) {
 	std::fstream res_file;
 	res_file.open(save_path, std::ios::out | std::ios::app);
@@ -142,6 +167,9 @@ void Tester::saveCmpResToFile(std::string save_path, std::string cur_isbn_answer
 	}
 }
 
+/**@brief 保存结果到文件
+ * @param[in] save_path 保存路径
+ */
 void Tester::saveResult(std::string save_path) {
 	std::fstream res_file;
 	res_file.open(save_path, std::ios::out | std::ios::app);
@@ -155,6 +183,9 @@ void Tester::saveResult(std::string save_path) {
 		<< "=========================================================" << std::endl << std::endl;
 }
 
+/**@brief 计算准确率
+ * @param[in] save_path 保存路径
+ */
 void Tester::calcAccuracy(std::string save_path) {
 	int n = images.size();
 	for (int i = 0; i < n; i++) {
@@ -180,6 +211,7 @@ void Tester::calcAccuracy(std::string save_path) {
 		saveCmpResToFile(save_path, cur_isbn_answer, cur_isbn_recognize_result, i);
 	}
 
+	// 计算准确率并输出
 	ISBN_accuracy = (double)ISBN_test_accurate / (double)ISBN_test_total;
 	char_accuracy = (double)char_accurate / (double)char_total;
 	std::cout 

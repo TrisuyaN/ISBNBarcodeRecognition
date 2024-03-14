@@ -19,9 +19,10 @@ const string GLOW_TEST_PATH = ".\\img\\glow_test\\";
 
 
 
-/**@brief OpenCV测试函数，包含了多个子测试 
-* @return void
-*/
+/**@brief OpenCV测试函数
+ * @details 测试OpenCV的摄像头、图片显示、批量读取图片等功能
+ * @return 函数执行结果
+ */
 void opencv_test() {
 
 #ifdef OPENCV_CAMERA_TEST
@@ -42,8 +43,8 @@ void opencv_test() {
 #ifdef OPENCV_CAMERA_TEST
 
 /**@brief OpenCV摄像头测试函数
-* @return 函数执行结果
-*/
+ * @return 函数执行结果
+ */
 int opencv_camera_test() {
 	VideoCapture capture;
 	capture.open(0);
@@ -93,9 +94,10 @@ int opencv_img_test() {
 
 #ifdef OPENCV_GLOB_TEST
 
-/**@brief OpenCV批量读取图片函数
-* @return 批量读取得到的OpenCV Mat向量
-*/
+/**@brief OpenCV批量读取图片测试函数
+ * @param[in] path 图片路径
+ * @return 函数执行结果
+ */
 vector<Mat> opencv_glob_readfile_test(std::string path) {
 	string pattern_jpg = path + "*.jpg";
 	vector<cv::String> image_files;
@@ -123,10 +125,10 @@ vector<Mat> opencv_glob_readfile_test(std::string path) {
 	return images;
 }
 
-/**@brief OpenCV遍历vector显示图片测试函数
-* @param[in] images 图片向量
-* @return 函数执行结果
-*/
+/**@brief OpenCV批量显示图片测试函数
+ * @param[in] images 图片
+ * @return 函数执行结果
+ */
 int opencv_glob_show_test(vector<Mat>&& images) {
 	//cout << &images << endl;
 	for (auto image : images) {

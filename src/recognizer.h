@@ -26,8 +26,8 @@
 * 存储模板索引和charMatch函数的识别结果
 */
 struct CharMatchResult {
-	int template_index;	///< 使用的模板索引
-	double diff;		///< charMatch函数的识别结果
+	int template_index;			///< 使用的模板索引
+	double diff;				///< charMatch函数的识别结果
 };
 
 /**@struct info
@@ -35,7 +35,7 @@ struct CharMatchResult {
 * 存储recognize最终识别结果，除了识别的字符串还可以附带其他信息
 */
 struct RecognizeResult {
-	std::string res;	///< recognize最终识别结果字符串
+	std::string res;			///< recognize最终识别结果字符串
 };
 
 /**
