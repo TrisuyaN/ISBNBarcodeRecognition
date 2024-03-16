@@ -93,9 +93,12 @@ char Recognizer::charRecognizer(cv::Mat input_image, int index_in_set) {
 				match_results[template_index].diff *= (double)DEBUFF;
 			}
 		}
-		// 开始区域数字特判，为B模板匹配增加权重，为8减小权重
-		else if (index_in_set <= 3) {
+		// 开始区域数字特判，为B和N模板匹配增加权重，为8减小权重
+		else if (index_in_set <= 4) {
 			if (template_index % N_TEMPLATE_IMAGES == 12) {
+				match_results[template_index].diff /= (double)BUFF;
+			}
+			else if (template_index % N_TEMPLATE_IMAGES == 13) {
 				match_results[template_index].diff /= (double)BUFF;
 			}
 			else if (template_index % N_TEMPLATE_IMAGES == 8) {

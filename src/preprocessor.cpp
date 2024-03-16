@@ -444,7 +444,6 @@ void Preprocessor::preprocess() {
 	resized_image = extractUpperHalf(raw_image);
 	gray_image = gray(resized_image);
 	denoised_image = denoise(gray_image);
-
 	threshold_image = threshold(denoised_image);
 	rectified_image = rectify(threshold_image);
 	flood_filled_image = floodFill(rectified_image);

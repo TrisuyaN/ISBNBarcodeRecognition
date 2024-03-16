@@ -89,16 +89,43 @@ void Tester::test(bool save_preprocessed_images, std::string preprocessed_images
 		Preprocessor p(images[i]);
 		p.preprocess();
 		if (save_preprocessed_images) {
-			std::string fname = image_files[i].substr(image_files[i].rfind('\\')+1);
-			p.dbgSave(fname, test_images_path + preprocessed_images_savepath);
+			p.dbgSave(
+				image_files[i].substr(image_files[i].rfind('\\') + 1), 
+				test_images_path + preprocessed_images_savepath);
 		}
 
 		// 识别
 		std::vector<cv::Mat> preprocessed_image_set = p.getPreprocessResult();
 		Recognizer r(preprocessed_image_set, template_images_path);
 		RecognizeResult res = r.recognize();
-		// 保存识别结果和模板命中数
-		isbn_recognize_results.push_back(digitFilter(res.res));
+
+		// 检测字符过少，判定为黑色背景
+		if (digitFilter(res.res).length() < 6) {
+			cv::Mat rev_img;
+			cv::bitwise_not(images[i], rev_img);
+			Preprocessor p(rev_img);
+			p.preprocess();
+
+			if (save_preprocessed_images) {
+				p.dbgSave(
+					"re_" + image_files[i].substr(image_files[i].rfind('\\') + 1),
+					test_images_path + preprocessed_images_savepath);
+			}
+
+			// 再次识别
+			preprocessed_image_set = p.getPreprocessResult();
+			Recognizer r(preprocessed_image_set, template_images_path);
+			res = r.recognize();
+		}
+
+		// 过滤、保存识别结果和模板命中数
+		std::string tmp = res.res;
+		if(tmp.find('N')!=std::string::npos)
+		tmp = tmp.substr(tmp.find('N')+1);
+		tmp = digitFilter(tmp);
+		if (tmp.length() > 13) tmp = tmp.substr(0, 13);
+
+		isbn_recognize_results.push_back(tmp);
 		std::vector<int> partial_ts = r.getTemplatesScores();
 		for (int i = 0; i < N_TEMPLATE_IMAGES * N_TEMPLATE; i++) {
 			templates_scores[i] += partial_ts[i];

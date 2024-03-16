@@ -33,7 +33,7 @@ using namespace std;
 using namespace cv;
 
 // 在此处设置程序运行路径参数
-const string test_images_path = "img\\test_max\\";
+const string test_images_path = "img\\test_special\\";
 const string template_images_path = "img\\templates\\";
 
 const string preprocessed_images_save_path = "preprocessed_images_save\\";
