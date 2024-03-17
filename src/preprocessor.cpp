@@ -81,7 +81,7 @@ void Preprocessor::solveBlackBackground(cv::Mat& input_image) {
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::gray(cv::Mat& input_image) {
+cv::Mat Preprocessor::gray(cv::Mat input_image) {
 	cv::Mat res_image;
 	cvtColor(input_image, res_image, cv::COLOR_RGB2GRAY);
 	return res_image;
@@ -91,7 +91,7 @@ cv::Mat Preprocessor::gray(cv::Mat& input_image) {
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::rectify(cv::Mat& input_image) {
+cv::Mat Preprocessor::rectify(cv::Mat input_image) {
 	cv::Mat res_image;
 	cv::Mat pic_edge;
 
@@ -146,7 +146,7 @@ int Preprocessor::sortMid(int val[], int n){
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::denoise(cv::Mat& input_image) {
+cv::Mat Preprocessor::denoise(cv::Mat input_image) {
 	// 获得结构元素滑动窗口用于膨胀腐蚀
 	cv::Mat element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
 	// 膨胀操作 增强图像中的白色区域（前景）。使二值图像白色区域变得更加大，黑色区域变得更小
@@ -182,7 +182,7 @@ cv::Mat Preprocessor::denoise(cv::Mat& input_image) {
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
+cv::Mat Preprocessor::threshold(cv::Mat input_image) {
 	cv::Mat res_image;
 
 	// 自适应阈值处理
@@ -203,7 +203,7 @@ cv::Mat Preprocessor::threshold(cv::Mat& input_image) {
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::floodFill(cv::Mat& input_image) {
+cv::Mat Preprocessor::floodFill(cv::Mat input_image) {
 	cv::Mat res_image = input_image;
 	int dx[] = { -1,0,1,-1,1,-1,0,1 };
 	int dy[] = { 1,1,1,0,0,-1,-1,-1 };
@@ -246,7 +246,7 @@ cv::Mat Preprocessor::floodFill(cv::Mat& input_image) {
  * @param[in] input_image 源图片引用
  * @return 处理后的图像
  */
-cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
+cv::Mat Preprocessor::getROIYImage(cv::Mat input_image) {
 	
 	std::vector<int> rows_white_pixels;				// 存储行白色像素数
 	std::vector<cv::Point> histogram_points;		// 用于表示每一行的白像素值大于阈值（100）的数量
@@ -265,7 +265,9 @@ cv::Mat Preprocessor::getROIYImage(cv::Mat& input_image) {
 		rows_white_pixels.push_back(while_pixel_sum);												// 保存计数
 		histogram_points.push_back(cv::Point(while_pixel_sum, i));									// 保存？中点？points也许反映的不是输入图片上的点而是“直方图”，而sum除以2是为了缩减直方图长度
 		
-		//if (i) cv::line(input_image, points[max(0, i - 1)], points[i], cv::Scalar(255, 0, 0), 2); // 绘制直方图到原图
+
+		cv::line(histogram_dbg_image, cv::Point(ROI_Y_VALID_NWP_THRESHOLD, i), cv::Point(ROI_Y_VALID_NWP_THRESHOLD, i), cv::Scalar(255, 0, 0), 2);	// 绘制直方图到矫正二值化图副本
+		if (i) cv::line(histogram_dbg_image, histogram_points[max(0, i - 1)], histogram_points[i], cv::Scalar(255, 0, 0), 2);						// 绘制直方图到矫正二值化图副本
 	}
 	
 	int idx = -1;
@@ -353,10 +355,10 @@ bool Preprocessor::charImgCheck(cv::Mat input_image) {
 }
 
 /**@brief 对竖直方向ROI切割处理得到ISBN的字符图像集，类似get_ROI_y的方法继续对（输入的）结果区域逐列处理，获得ROI_range_x
- * @param[in] input_image 源图片引用
+ * @param[in] input_image 源图片
  * @return 切割处理得到的字符图像集
  */
-std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
+std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat input_image) {
 	std::vector<int> num_area;
 	std::vector<RangeStruct> num_ranges;
 	std::vector<cv::Mat> result_image_set;
@@ -430,7 +432,7 @@ std::vector<cv::Mat> Preprocessor::getROIX(cv::Mat& input_image) {
 
 
 /**@brief Preprocessor类构造函数
- * @param[in] input_image 待处理的图片引用
+ * @param[in] input_image 待处理的图片
  */
 Preprocessor::Preprocessor(cv::Mat input_image) {
 	raw_image = input_image;
@@ -441,13 +443,14 @@ Preprocessor::Preprocessor(cv::Mat input_image) {
  */
 void Preprocessor::preprocess() {
 	//solveBlackBackground(raw_image);
-	resized_image = extractUpperHalf(raw_image);
-	gray_image = gray(resized_image);
-	denoised_image = denoise(gray_image);
-	threshold_image = threshold(denoised_image);
-	rectified_image = rectify(threshold_image);
-	flood_filled_image = floodFill(rectified_image);
-	ROI_image_y = getROIYImage(flood_filled_image);
+	resized_image = extractUpperHalf(raw_image).clone();
+	gray_image = gray(resized_image).clone();
+	denoised_image = denoise(gray_image).clone();
+	threshold_image = threshold(denoised_image).clone();
+	rectified_image = rectify(threshold_image).clone();
+	flood_filled_image = floodFill(rectified_image).clone();
+	histogram_dbg_image = flood_filled_image.clone();
+	ROI_image_y = getROIYImage(flood_filled_image).clone();
 	processed_image_set = getROIX(ROI_image_y);
 }
 
@@ -500,11 +503,13 @@ void Preprocessor::dbgSave(string filename, string save_path) {
 		imwrite(save_path + filename + "_05_rectified.jpg", rectified_image);
 	if (!flood_filled_image.empty()) 
 		imwrite(save_path + filename + "_06_flood_filled.jpg", flood_filled_image);
+	if (!histogram_dbg_image.empty())
+		imwrite(save_path + filename + "_07_histogram.jpg", histogram_dbg_image);
 	if (!ROI_image_y.empty()) 
-		imwrite(save_path + filename + "_07_ROI_y.jpg", ROI_image_y);
+		imwrite(save_path + filename + "_08_ROI_y.jpg", ROI_image_y);
 	if (!processed_image_set.empty()) {
 		for (int i = 0; i < processed_image_set.size(); i++) {
-			if (!processed_image_set[i].empty()) imwrite(save_path + filename + "_08_spilted_" + to_string(i) + ".jpg", processed_image_set[i]);
+			if (!processed_image_set[i].empty()) imwrite(save_path + filename + "_09_spilted_" + to_string(i) + ".jpg", processed_image_set[i]);
 		}
 	}
 
